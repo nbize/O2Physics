@@ -14,6 +14,11 @@ o2physics_add_dpl_workflow(track-index-skims-creator
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::AnalysisCCDB O2::DetectorsVertexing ROOT::EG
                     COMPONENT_NAME Analysis)
 
+o2physics_add_dpl_workflow(pvrefit-skim-converted
+                    SOURCES HFPvRefitSkimConverted.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore
+                    COMPONENT_NAME Analysis)
+
 o2physics_add_dpl_workflow(candidate-creator-2prong
                     SOURCES HFCandidateCreator2Prong.cxx
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2::DetectorsVertexing ROOT::EG
@@ -66,6 +71,11 @@ o2physics_add_dpl_workflow(candidate-creator-x
 
 o2physics_add_dpl_workflow(tree-creator-lc-topkpi
                     SOURCES HFTreeCreatorLcToPKPi.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2::DetectorsVertexing ROOT::EG
+                    COMPONENT_NAME Analysis)
+
+o2physics_add_dpl_workflow(tree-creator-lb-tolcpi
+                    SOURCES HFTreeCreatorLbToLcPi.cxx
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2::DetectorsVertexing ROOT::EG
                     COMPONENT_NAME Analysis)
 

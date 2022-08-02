@@ -10,16 +10,16 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   qaTOF.h
+/// \file   qaPIDTOF.h
 /// \author Nicolò Jacazio nicolo.jacazio@cern.ch
 /// \brief  Header file for QA tasks of the TOF PID quantities
 ///
 
-#include "Common/Core/PID/PIDResponse.h"
 #include "Framework/HistogramRegistry.h"
 #include "Framework/StaticFor.h"
 #include "Common/DataModel/TrackSelectionTables.h"
 #include "Common/DataModel/EventSelection.h"
+#include "Common/DataModel/PIDResponse.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -36,6 +36,12 @@ struct tofPidQa {
   static constexpr std::string_view hexpected_diff[Np] = {"expected_diff/El", "expected_diff/Mu", "expected_diff/Pi",
                                                           "expected_diff/Ka", "expected_diff/Pr", "expected_diff/De",
                                                           "expected_diff/Tr", "expected_diff/He", "expected_diff/Al"};
+  static constexpr std::string_view hexpected_diffptpos[Np] = {"expected_diffptpos/El", "expected_diffptpos/Mu", "expected_diffptpos/Pi",
+                                                               "expected_diffptpos/Ka", "expected_diffptpos/Pr", "expected_diffptpos/De",
+                                                               "expected_diffptpos/Tr", "expected_diffptpos/He", "expected_diffptpos/Al"};
+  static constexpr std::string_view hexpected_diffptneg[Np] = {"expected_diffptneg/El", "expected_diffptneg/Mu", "expected_diffptneg/Pi",
+                                                               "expected_diffptneg/Ka", "expected_diffptneg/Pr", "expected_diffptneg/De",
+                                                               "expected_diffptneg/Tr", "expected_diffptneg/He", "expected_diffptneg/Al"};
   static constexpr std::string_view hexpsigma[Np] = {"expsigma/El", "expsigma/Mu", "expsigma/Pi",
                                                      "expsigma/Ka", "expsigma/Pr", "expsigma/De",
                                                      "expsigma/Tr", "expsigma/He", "expsigma/Al"};
@@ -67,7 +73,7 @@ struct tofPidQa {
   Configurable<int> nBinsNSigma{"nBinsNSigma", 200, "Number of bins for the NSigma"};
   Configurable<float> minNSigma{"minNSigma", -10.f, "Minimum NSigma in range"};
   Configurable<float> maxNSigma{"maxNSigma", 10.f, "Maximum NSigma in range"};
-  Configurable<int> applyEvSel{"applyEvSel", 2, "Flag to apply rapidity cut: 0 -> no event selection, 1 -> Run 2 event selection, 2 -> Run 3 event selection"};
+  Configurable<int> applyEvSel{"applyEvSel", 2, "Flag to apply event selection cut: 0 -> no event selection, 1 -> Run 2 event selection, 2 -> Run 3 event selection"};
   Configurable<bool> applyTrackCut{"applyTrackCut", false, "Flag to apply standard track cuts"};
   Configurable<bool> applyRapidityCut{"applyRapidityCut", false, "Flag to apply rapidity cut"};
   Configurable<bool> enableEvTimeSplitting{"enableEvTimeSplitting", false, "Flag to enable histograms splitting depending on the Event Time used"};
@@ -76,11 +82,20 @@ struct tofPidQa {
   void initPerParticle(const AxisSpec& pAxis, const AxisSpec& ptAxis)
   {
     static_assert(id >= 0 && id <= PID::Alpha && "Particle index outside limits");
+    bool enableFullHistos = false;
+    int enabledProcesses = 0;
     switch (id) { // Skipping disabled particles
 #define particleCase(particleId)                                 \
   case PID::particleId:                                          \
     if (!doprocess##particleId && !doprocessFull##particleId) {  \
       return;                                                    \
+    }                                                            \
+    if (!doprocess##particleId) {                                \
+      enabledProcesses++;                                        \
+    }                                                            \
+    if (!doprocessFull##particleId) {                            \
+      enableFullHistos = true;                                   \
+      enabledProcesses++;                                        \
     }                                                            \
     LOGF(info, "Enabled TOF QA for %s %s", #particleId, pT[id]); \
     break;
@@ -96,6 +111,9 @@ struct tofPidQa {
       particleCase(Alpha);
 #undef particleCase
     }
+    if (enabledProcesses != 1) {
+      LOG(fatal) << "Cannot enable more than one process function per particle, check and retry!";
+    }
 
     auto addHistogram = [&](const auto& name, const auto& title, const auto& xAxis, const auto& yAxis) {
       if (!enableEvTimeSplitting) {
@@ -110,6 +128,18 @@ struct tofPidQa {
       histo->GetZaxis()->SetBinLabel(4, "FT0+TOF");
     };
 
+    // NSigma
+    const char* axisTitle = Form("N_{#sigma}^{TOF}(%s)", pT[id]);
+    const AxisSpec nSigmaAxis{nBinsNSigma, minNSigma, maxNSigma, axisTitle};
+    addHistogram(hnsigma[id], axisTitle, pAxis, nSigmaAxis);
+    addHistogram(hnsigmapt[id], axisTitle, ptAxis, nSigmaAxis);
+    addHistogram(hnsigmapospt[id], axisTitle, ptAxis, nSigmaAxis);
+    addHistogram(hnsigmanegpt[id], axisTitle, ptAxis, nSigmaAxis);
+
+    if (!enableFullHistos) { // Enabling only NSigma for tiny tables
+      return;
+    }
+
     // Exp signal
     const AxisSpec expAxis{1000, 0, 2e6, Form("t_{exp}(%s) (ps)", pT[id])};
     histos.add(hexpected[id].data(), "", kTH2F, {pAxis, expAxis});
@@ -121,21 +151,12 @@ struct tofPidQa {
     // Exp Sigma
     const AxisSpec expSigmaAxis{nBinsExpSigma, minExpSigma, maxExpSigma, Form("Exp_{#sigma}^{TOF}(%s) (ps)", pT[id])};
     histos.add(hexpsigma[id].data(), "", kTH2F, {pAxis, expSigmaAxis});
-
-    // NSigma
-    const char* axisTitle = Form("N_{#sigma}^{TOF}(%s)", pT[id]);
-    const AxisSpec nSigmaAxis{nBinsNSigma, minNSigma, maxNSigma, axisTitle};
-    addHistogram(hnsigma[id], axisTitle, pAxis, nSigmaAxis);
-    addHistogram(hnsigmapt[id], axisTitle, ptAxis, nSigmaAxis);
-    addHistogram(hnsigmapospt[id], axisTitle, ptAxis, nSigmaAxis);
-    addHistogram(hnsigmanegpt[id], axisTitle, ptAxis, nSigmaAxis);
   }
 
   void init(o2::framework::InitContext&)
   {
     const AxisSpec multAxis{100, 0, 100, "TOF multiplicity"};
     const AxisSpec vtxZAxis{100, -20, 20, "Vtx_{z} (cm)"};
-    const AxisSpec tofAxis{10000, 0, 2e6, "TOF Signal (ps)"};
     const AxisSpec etaAxis{100, -1, 1, "#it{#eta}"};
     const AxisSpec phiAxis{100, 0, TMath::TwoPi(), "#it{#phi}"};
     const AxisSpec colTimeAxis{100, -2000, 2000, "Collision time (ps)"};
@@ -150,6 +171,7 @@ struct tofPidQa {
       pAxis.makeLogaritmic();
       pExpAxis.makeLogaritmic();
     }
+    const AxisSpec tofAxis{10000, 0, 2e6, "TOF Signal (ps)"};
 
     // Event properties
     auto h = histos.add<TH1>("event/evsel", "", kTH1F, {{10, 0.5, 10.5, "Ev. Sel."}});
@@ -172,9 +194,22 @@ struct tofPidQa {
     }
     histos.add("event/trackmultiplicity", "", kTH1F, {multAxis});
     histos.add("event/tofmultiplicity", "", kTH1F, {multAxis});
-    histos.add("event/colltime", "", kTH1F, {colTimeAxis});
-    histos.add("event/colltimereso", "", kTH2F, {multAxis, colTimeResoAxis});
-    histos.add("event/tofsignal", "", kTH2F, {pAxis, tofAxis});
+
+    histos.add("event/evtime/colltime", "collisionTime", kTH1F, {colTimeAxis});
+    histos.add("event/evtime/colltimereso", "collisionTimeRes", kTH2F, {multAxis, colTimeResoAxis});
+    histos.add("event/evtime/undef", "Undefined event time", kTH1F, {colTimeAxis});
+    histos.add("event/evtime/undefreso", "Undefined event time reso.", kTH2F, {multAxis, colTimeResoAxis});
+    histos.add("event/evtime/avail", "Available event time", kTH1F, {colTimeAxis});
+    histos.add("event/evtime/availreso", "Available event time reso.", kTH2F, {multAxis, colTimeResoAxis});
+    histos.add("event/evtime/ft0tof", "FT0+TOF event time", kTH1F, {colTimeAxis});
+    histos.add("event/evtime/ft0tofreso", "FT0+TOF event time reso.", kTH2F, {multAxis, colTimeResoAxis});
+    histos.add("event/evtime/tof", "TOF event time", kTH1F, {colTimeAxis});
+    histos.add("event/evtime/tofreso", "TOF event time reso.", kTH2F, {multAxis, colTimeResoAxis});
+    histos.add("event/evtime/ft0", "FT0 event time", kTH1F, {colTimeAxis});
+    histos.add("event/evtime/ft0reso", "FT0 event time reso.", kTH2F, {multAxis, colTimeResoAxis});
+
+    histos.add("event/tofsignal", "TOF signal", kTH2F, {pAxis, tofAxis});
+    histos.add("event/tofsignalunassigned", "TOF signal (unassigned tracks)", kTH2F, {pAxis, tofAxis});
     histos.add("event/pexp", "", kTH2F, {pAxis, pExpAxis});
     histos.add("event/eta", "", kTH1F, {etaAxis});
     histos.add("event/phi", "", kTH1F, {phiAxis});
@@ -211,8 +246,12 @@ struct tofPidQa {
     }
 
     // Computing Multiplicity first
-    float ntracks = 0;
+    int ntracks = 0;
     int tofmult = 0;
+    float evtime = 0.f;
+    float evtimereso = 0.f;
+    int evtimeflag = 0;
+
     if constexpr (fillHistograms) {
       for (auto t : tracks) {
         if (applyTrackCut && !t.isGlobalTrack()) {
@@ -223,6 +262,19 @@ struct tofPidQa {
           continue;
         }
         tofmult++;
+        evtime = t.tofEvTime();
+        evtimereso = t.tofEvTimeErr();
+        evtimeflag = 0;
+        if (t.isEvTimeDefined()) {
+          evtimeflag = 1;
+        }
+        if (t.isEvTimeTOF() && t.isEvTimeT0AC()) {
+          evtimeflag = 2;
+        } else if (t.isEvTimeTOF()) {
+          evtimeflag = 3;
+        } else if (t.isEvTimeT0AC()) {
+          evtimeflag = 4;
+        }
       }
       histos.fill(HIST("event/evsel"), 3);
     }
@@ -236,8 +288,34 @@ struct tofPidQa {
       histos.fill(HIST("event/tofmultiplicity"), tofmult);
 
       const float collisionTime_ps = collision.collisionTime() * 1000.f;
-      histos.fill(HIST("event/colltime"), collisionTime_ps);
-      histos.fill(HIST("event/colltimereso"), tofmult, collision.collisionTimeRes() * 1000.f);
+      histos.fill(HIST("event/evtime/colltime"), collisionTime_ps);
+      histos.fill(HIST("event/evtime/colltimereso"), tofmult, collision.collisionTimeRes() * 1000.f);
+
+      switch (evtimeflag) {
+        case 0:
+          histos.fill(HIST("event/evtime/undef"), evtime);
+          histos.fill(HIST("event/evtime/undefreso"), tofmult, evtimereso);
+          break;
+        case 1:
+          histos.fill(HIST("event/evtime/avail"), evtime);
+          histos.fill(HIST("event/evtime/availreso"), tofmult, evtimereso);
+          break;
+        case 2:
+          histos.fill(HIST("event/evtime/ft0tof"), evtime);
+          histos.fill(HIST("event/evtime/ft0tofreso"), tofmult, evtimereso);
+          break;
+        case 3:
+          histos.fill(HIST("event/evtime/tof"), evtime);
+          histos.fill(HIST("event/evtime/tofreso"), tofmult, evtimereso);
+          break;
+        case 4:
+          histos.fill(HIST("event/evtime/tof"), evtime);
+          histos.fill(HIST("event/evtime/tofreso"), tofmult, evtimereso);
+          break;
+        default:
+          LOG(fatal) << "Unrecognized Event time flag";
+          break;
+      }
     }
     return true;
   }
@@ -272,7 +350,11 @@ struct tofPidQa {
     if constexpr (fillHistograms) {
       histos.fill(HIST("event/trackselection"), 5.f);
       histos.fill(HIST("event/particlehypo"), track.pidForTracking());
-      histos.fill(HIST("event/tofsignal"), track.p(), track.tofSignal());
+      if (track.has_collision()) {
+        histos.fill(HIST("event/tofsignal"), track.p(), track.tofSignal());
+      } else {
+        histos.fill(HIST("event/tofsignalunassigned"), track.p(), track.tofSignal());
+      }
       histos.fill(HIST("event/pexp"), track.p(), track.tofExpMom());
       histos.fill(HIST("event/eta"), track.eta());
       histos.fill(HIST("event/phi"), track.phi());
@@ -287,7 +369,9 @@ struct tofPidQa {
 
   using CollisionCandidate = soa::Join<aod::Collisions, aod::EvSels>::iterator;
   void process(CollisionCandidate const& collision,
-               soa::Join<aod::Tracks, aod::TracksExtra, aod::TOFSignal, aod::TrackSelection> const& tracks)
+               soa::Join<aod::Tracks, aod::TracksExtra,
+                         aod::TOFSignal, aod::TOFEvTime, aod::pidEvTimeFlags,
+                         aod::TrackSelection> const& tracks)
   {
     isEventSelected<true>(collision, tracks);
     for (auto t : tracks) {
@@ -295,7 +379,8 @@ struct tofPidQa {
     }
   }
 
-  template <o2::track::PID::ID id, bool fillFullHistograms, typename TrackType>
+  template <o2::track::PID::ID id, bool fillFullHistograms,
+            typename TrackType>
   void processSingleParticle(CollisionCandidate const& collision,
                              TrackType const& tracks)
   {
@@ -358,13 +443,14 @@ struct tofPidQa {
   }
 
   // QA of nsigma only tables
-#define makeProcessFunction(inputPid, particleId)                                                  \
-  void process##particleId(CollisionCandidate const& collision,                                    \
-                           soa::Join<aod::Tracks, aod::TracksExtra, aod::TrackSelection,           \
-                                     aod::pidEvTimeFlags, aod::TOFSignal, inputPid> const& tracks) \
-  {                                                                                                \
-    processSingleParticle<PID::particleId, false>(collision, tracks);                              \
-  }                                                                                                \
+#define makeProcessFunction(inputPid, particleId)                                        \
+  void process##particleId(CollisionCandidate const& collision,                          \
+                           soa::Join<aod::Tracks, aod::TracksExtra, aod::TrackSelection, \
+                                     aod::pidEvTimeFlags, aod::TOFSignal,                \
+                                     inputPid> const& tracks)                            \
+  {                                                                                      \
+    processSingleParticle<PID::particleId, false>(collision, tracks);                    \
+  }                                                                                      \
   PROCESS_SWITCH(tofPidQa, process##particleId, Form("Process for the %s hypothesis for TOF NSigma QA", #particleId), false);
 
   makeProcessFunction(aod::pidTOFEl, Electron);
@@ -379,13 +465,14 @@ struct tofPidQa {
 #undef makeProcessFunction
 
 // QA of full tables
-#define makeProcessFunction(inputPid, particleId)                                                      \
-  void processFull##particleId(CollisionCandidate const& collision,                                    \
-                               soa::Join<aod::Tracks, aod::TracksExtra, aod::TrackSelection,           \
-                                         aod::pidEvTimeFlags, aod::TOFSignal, inputPid> const& tracks) \
-  {                                                                                                    \
-    processSingleParticle<PID::particleId, true>(collision, tracks);                                   \
-  }                                                                                                    \
+#define makeProcessFunction(inputPid, particleId)                                            \
+  void processFull##particleId(CollisionCandidate const& collision,                          \
+                               soa::Join<aod::Tracks, aod::TracksExtra, aod::TrackSelection, \
+                                         aod::pidEvTimeFlags, aod::TOFSignal,                \
+                                         inputPid> const& tracks)                            \
+  {                                                                                          \
+    processSingleParticle<PID::particleId, true>(collision, tracks);                         \
+  }                                                                                          \
   PROCESS_SWITCH(tofPidQa, processFull##particleId, Form("Process for the %s hypothesis for full TOF PID QA", #particleId), false);
 
   makeProcessFunction(aod::pidTOFFullEl, Electron);
@@ -422,6 +509,8 @@ struct tofPidBetaQa {
   Configurable<int> nBinsBeta{"nBinsBeta", 4000, "Number of bins for the beta"};
   Configurable<float> minBeta{"minBeta", 0, "Minimum beta in range"};
   Configurable<float> maxBeta{"maxBeta", 2.f, "Maximum beta in range"};
+  Configurable<int> applyEvSel{"applyEvSel", 2, "Flag to apply event selection cut: 0 -> no event selection, 1 -> Run 2 event selection, 2 -> Run 3 event selection"};
+  Configurable<bool> applyTrackCut{"applyTrackCut", false, "Flag to apply standard track cuts"};
 
   void init(o2::framework::InitContext&)
   {
@@ -442,11 +531,24 @@ struct tofPidBetaQa {
     // Event properties
     histos.add("event/tofsignal", "", HistType::kTH2F, {pAxis, tofAxis});
     histos.add("event/tofbeta", "", HistType::kTH2F, {pAxis, betaAxis});
-    histos.add("event/tofbetaEvTimeTOF", "", HistType::kTH2F, {pAxis, betaAxis});
+    histos.add("event/tofbetaEvTimeTOF", "Ev. Time TOF", HistType::kTH2F, {pAxis, betaAxis});
+    histos.add("event/tofbetaEvTimeTOFOnly", "Ev. Time TOF Only", HistType::kTH2F, {pAxis, betaAxis});
+    histos.add("event/tofbetaEvTimeT0AC", "Ev. Time T0AC", HistType::kTH2F, {pAxis, betaAxis});
+    histos.add("event/tofbetaEvTimeT0ACOnly", "Ev. Time T0AC Only", HistType::kTH2F, {pAxis, betaAxis});
     histos.add("event/eta", "", HistType::kTH1F, {etaAxis});
     histos.add("event/length", "", HistType::kTH1F, {lAxis});
     histos.add("event/pt", "", HistType::kTH1F, {ptAxis});
     histos.add("event/p", "", HistType::kTH1F, {pAxis});
+    auto h = histos.add<TH1>("event/evsel", "", kTH1F, {{10, 0.5, 10.5, "Ev. Sel."}});
+    h->GetXaxis()->SetBinLabel(1, "Events read");
+    h->GetXaxis()->SetBinLabel(2, "Passed ev. sel.");
+    h->GetXaxis()->SetBinLabel(3, "Passed mult.");
+    h->GetXaxis()->SetBinLabel(4, "Passed vtx Z");
+
+    h = histos.add<TH1>("event/trackselection", "", kTH1F, {{10, 0.5, 10.5, "Selection passed"}});
+    h->GetXaxis()->SetBinLabel(1, "Tracks read");
+    h->GetXaxis()->SetBinLabel(2, "hasTOF");
+    h->GetXaxis()->SetBinLabel(3, "isGlobalTrack");
   }
 
   template <uint8_t i, typename T>
@@ -456,19 +558,61 @@ struct tofPidBetaQa {
     histos.fill(HIST(hexpected_diff[i]), t.p(), exp_diff);
     histos.fill(HIST(hnsigma[i]), t.p(), nsigma);
   }
-  void process(soa::Join<aod::Tracks, aod::TracksExtra, aod::pidTOFbeta, aod::TrackSelection, aod::TOFSignal, aod::pidEvTimeFlags> const& tracks,
-               aod::Collisions const&)
-  {
-    for (auto const& track : tracks) {
 
+  using CollisionCandidate = soa::Join<aod::Collisions, aod::EvSels>::iterator;
+  void process(CollisionCandidate const& collision,
+               soa::Join<aod::Tracks, aod::TracksExtra, aod::pidTOFbeta, aod::TrackSelection, aod::TOFSignal, aod::pidEvTimeFlags> const& tracks)
+  {
+
+    histos.fill(HIST("event/evsel"), 1);
+    if (applyEvSel == 1) {
+      if (!collision.sel7()) {
+        return;
+      }
+    } else if (applyEvSel == 2) {
+      if (!collision.sel8()) {
+        return;
+      }
+    }
+
+    histos.fill(HIST("event/evsel"), 2);
+
+    // Computing Multiplicity first
+    float ntracks = 0;
+    for (auto t : tracks) {
+      if (applyTrackCut && !t.isGlobalTrack()) {
+        continue;
+      }
+      ntracks += 1;
+    }
+    histos.fill(HIST("event/evsel"), 3);
+    if (abs(collision.posZ()) > 10.f) {
+      return;
+    }
+
+    histos.fill(HIST("event/evsel"), 4);
+
+    for (auto const& track : tracks) {
+      histos.fill(HIST("event/trackselection"), 1.f);
       if (!track.hasTOF()) { // Skipping tracks without TOF
         continue;
       }
+      histos.fill(HIST("event/trackselection"), 2.f);
       if (!track.isGlobalTrack()) {
         continue;
       }
+      histos.fill(HIST("event/trackselection"), 3.f);
       if (track.isEvTimeTOF()) {
         histos.fill(HIST("event/tofbetaEvTimeTOF"), track.p(), track.beta());
+      }
+      if (track.isEvTimeTOF() && !track.isEvTimeT0AC()) {
+        histos.fill(HIST("event/tofbetaEvTimeTOFOnly"), track.p(), track.beta());
+      }
+      if (track.isEvTimeT0AC()) {
+        histos.fill(HIST("event/tofbetaEvTimeT0AC"), track.p(), track.beta());
+      }
+      if (track.isEvTimeT0AC() && !track.isEvTimeTOF()) {
+        histos.fill(HIST("event/tofbetaEvTimeT0ACOnly"), track.p(), track.beta());
       }
       histos.fill(HIST("event/tofbeta"), track.p(), track.beta());
       histos.fill(HIST("event/length"), track.length());
