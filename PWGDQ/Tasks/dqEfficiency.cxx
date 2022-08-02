@@ -406,7 +406,7 @@ struct AnalysisMuonSelection {
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::Muon) > 0) {
         VarManager::FillTrack<gkParticleMCFillMap>(muon.template mcParticle_as<aod::McParticles_001>());
       }
-
+      cout << muon->GetMotherId() << endl;
       if (fConfigQA) {
         fHistMan->FillHistClass("Muon_BeforeCuts", VarManager::fgValues);
       }
