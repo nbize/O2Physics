@@ -82,6 +82,65 @@ MCSignal* o2::aod::dqmcsignals::GetMCSignal(const char* name)
     signal = new MCSignal(name, "Inclusive jpsi", {prong}, {-1});
     return signal;
   }
+  //**************************************************************
+  ///adding signal to check
+  if (!nameStr.compare("pion")) {
+    MCProng prong(1, {211}, {true}, {false}, {0}, {0}, {false});
+    signal = new MCSignal(name, "pion", {prong}, {-1});
+    return signal;
+  }
+  if (!nameStr.compare("kaon")) {
+    MCProng prong(1, {321}, {true}, {false}, {0}, {0}, {false});
+    signal = new MCSignal(name, "kaon", {prong}, {-1});
+    return signal;
+  }
+  if (!nameStr.compare("AnyCharm")) {
+    MCProng prong(1, {403}, {true}, {false}, {0}, {0}, {false});
+    signal = new MCSignal(name, "AnyCharm", {prong}, {-1});
+    return signal;
+  }
+  if (!nameStr.compare("AnyStrange")) {
+    MCProng prong(1, {303}, {true}, {false}, {0}, {0}, {false});
+    signal = new MCSignal(name, "AnyStrange", {prong}, {-1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromPion")) {
+    MCProng prong(2, {13, 211}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
+    signal = new MCSignal(name, "Muon from pion decays", {prong}, {1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromKaon")) {
+    MCProng prong(2, {13, 321}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
+    signal = new MCSignal(name, "Muon from kaon decays", {prong}, {1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromB")) {
+    MCProng prong(2, {13, 521}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
+    signal = new MCSignal(name, "Muon from B decays", {prong}, {1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromAnyBeauty")) {
+    MCProng prong(2, {13, 503}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
+    signal = new MCSignal(name, "Muon from AnyB decays", {prong}, {1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromAnyCharm")) {
+    MCProng prong(2, {13, 403}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
+    signal = new MCSignal(name, "Muon from AnyStrange decays", {prong}, {1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromAnyStrange")) {
+    MCProng prong(2, {13, 303}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
+    signal = new MCSignal(name, "Muon from AnyCharm decays", {prong}, {1});
+    return signal;
+  }
+  if (!nameStr.compare("mumuFromJpsiFromB")) {
+    MCProng prong(3, {13, 443, 521}, {true, true, true}, {false, false, false}, {0, 0, 0}, {0, 0, 0}, {false, false, false});
+    signal = new MCSignal(name, "Muon pair from jpsi from B decays", {prong, prong}, {1, 1});
+    return signal;
+    //pdg = 503 (all beauty), if does not work
+  }
+  //**************************************************************
   if (!nameStr.compare("nonPromptJpsi")) {
     MCProng prong(2, {443, 503}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
     signal = new MCSignal(name, "Non-prompt jpsi", {prong}, {-1});
