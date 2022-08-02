@@ -402,11 +402,11 @@ struct AnalysisMuonSelection {
       // compute MC matched quantities using either the DQ skimmed or the Framework data models
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::ReducedMuon) > 0) {
         VarManager::FillTrack<gkParticleMCFillMap>(muon.reducedMCTrack());
+        cout << muon.mothers_as<aod::McParticles>() << endl;
       }
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::Muon) > 0) {
         VarManager::FillTrack<gkParticleMCFillMap>(muon.template mcParticle_as<aod::McParticles_001>());
       }
-      cout << muon->GetMotherId() << endl;
       if (fConfigQA) {
         fHistMan->FillHistClass("Muon_BeforeCuts", VarManager::fgValues);
       }
@@ -448,6 +448,7 @@ struct AnalysisMuonSelection {
           }
         }
       }
+      
 
       // fill histograms
       for (unsigned int i = 0; i < fMCSignals.size(); i++) {

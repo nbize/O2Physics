@@ -549,6 +549,8 @@ struct TableMakerMC {
           if (m < mcTracks.size()) { // protect against bad mother indices
             if (fNewLabels.find(m) != fNewLabels.end()) {
               mothers.push_back(fNewLabels.find(m)->second);
+              //cout << mctrack.pdgCode() << endl;
+              //cout << m.pdgCode() << endl;
             }
           } else {
             cout << "Mother label (" << m << ") exceeds the McParticles size (" << mcTracks.size() << ")" << endl;
