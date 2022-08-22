@@ -614,11 +614,14 @@ struct TableMakerMC {
       uint16_t mcflags = fMCFlags.find(oldLabel)->second;
 
       std::vector<int> mothers;
+      int i=0;
       if (mctrack.has_mothers()) {
         for (auto& m : mctrack.mothersIds()) {
           if (m < mcTracks.size()) { // protect against bad mother indices
             if (fNewLabels.find(m) != fNewLabels.end()) {
               mothers.push_back(fNewLabels.find(m)->second);
+              cout << mothers[i] << endl;
+              i++;
               //cout << mctrack.pdgCode() << endl;
               //cout << m.pdgCode() << endl;
             }

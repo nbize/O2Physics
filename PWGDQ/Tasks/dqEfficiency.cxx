@@ -402,7 +402,7 @@ struct AnalysisMuonSelection {
       // compute MC matched quantities using either the DQ skimmed or the Framework data models
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::ReducedMuon) > 0) {
         VarManager::FillTrack<gkParticleMCFillMap>(muon.reducedMCTrack());
-        cout << muon.mothers_as<aod::McParticles>() << endl;
+        //cout << muon.mothers_as<aod::McParticles>() << endl;
       }
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::Muon) > 0) {
         VarManager::FillTrack<gkParticleMCFillMap>(muon.template mcParticle_as<aod::McParticles_001>());
