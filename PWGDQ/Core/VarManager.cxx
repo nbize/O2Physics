@@ -400,4 +400,9 @@ void VarManager::SetDefaultVarNames()
   fgVariableUnits[kTrackDCAresZ] = "cm";
   fgVariableNames[kBitMapIndex] = " ";
   fgVariableUnits[kBitMapIndex] = "";
+  fgVariableNames[kDeltaPt_check] = "#Delta p_{T}";
+  fgVariableUnits[kDeltaPt_check] = "GeV/c";
+  fgVariableNames[kDeltaEta_check] = "#Delta #eta";
+  fgVariableUnits[kDeltaEta_check] = "";
+  
 }

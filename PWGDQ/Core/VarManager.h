@@ -268,6 +268,8 @@ class VarManager : public TObject
     kMCY,
     kMCParticleGeneratorId,
     kNMCParticleVariables,
+    kDeltaPt_check,
+    kDeltaEta_check,
 
     // Pair variables
     kCandidateId,
@@ -842,7 +844,7 @@ void VarManager::FillTrack(T const& track, float* values)
     values[kMCY] = track.y();
     values[kMCParticleGeneratorId] = track.producedByGenerator();
   }
-
+  values[kDeltaPt_check] = values[kMCPt] - values[kPt];
   // Derived quantities which can be computed based on already filled variables
   FillTrackDerived(values);
 }
