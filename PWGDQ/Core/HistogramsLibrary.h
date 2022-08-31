@@ -199,18 +199,18 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
     }
     if (subGroupStr.Contains("mc")) {
       //-------------------------------------DQ CHECKS--------------------------------------------------------------------------------
-      hm->AddHistogram(histClass, "DeltaPt_100bins", "", false, 100, -1.0, 1.0, VarManager::kDeltaPt_check);
-      hm->AddHistogram(histClass, "DeltaPt_200bins", "", false, 200, -1.0, 1.0, VarManager::kDeltaPt_check);
-      hm->AddHistogram(histClass, "DeltaPt_500bins", "", false, 500, -1.0, 1.0, VarManager::kDeltaPt_check);
-      hm->AddHistogram(histClass, "DeltaPt_100bins_wide", "", false, 100, -5.0, 5.0, VarManager::kDeltaPt_check);
-      hm->AddHistogram(histClass, "DeltaPt_200bins_wide", "", false, 200, -5.0, 5.0, VarManager::kDeltaPt_check);
-      hm->AddHistogram(histClass, "DeltaPt_500bins_wide", "", false, 500, -5.0, 5.0, VarManager::kDeltaPt_check);
-      hm->AddHistogram(histClass, "DeltaEta_100bins", "", false, 100, -1.0, 1.0, VarManager::kDeltaEta_check);
-      hm->AddHistogram(histClass, "DeltaEta_200bins", "", false, 200, -1.0, 1.0, VarManager::kDeltaEta_check);
-      hm->AddHistogram(histClass, "DeltaEta_500bins", "", false, 500, -1.0, 1.0, VarManager::kDeltaEta_check);
-      hm->AddHistogram(histClass, "DeltaEta_100bins_wide", "", false, 100, -5.0, 5.0, VarManager::kDeltaEta_check);
-      hm->AddHistogram(histClass, "DeltaEta_200bins_wide", "", false, 200, -5.0, 5.0, VarManager::kDeltaEta_check);
-      hm->AddHistogram(histClass, "DeltaEta_500bins_wide", "", false, 500, -5.0, 5.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaPt_100bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 100, -1.0, 1.0, VarManager::kDeltaPt_check);
+      hm->AddHistogram(histClass, "DeltaPt_200bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 200, -1.0, 1.0, VarManager::kDeltaPt_check);
+      hm->AddHistogram(histClass, "DeltaPt_500bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 500, -1.0, 1.0, VarManager::kDeltaPt_check);
+      hm->AddHistogram(histClass, "DeltaPt_100bins_wide", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 100, -5.0, 5.0, VarManager::kDeltaPt_check);
+      hm->AddHistogram(histClass, "DeltaPt_200bins_wide", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 200, -5.0, 5.0, VarManager::kDeltaPt_check);
+      hm->AddHistogram(histClass, "DeltaPt_500bins_wide", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 500, -5.0, 5.0, VarManager::kDeltaPt_check);
+      hm->AddHistogram(histClass, "DeltaEta_100bins", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 100, -1.0, 1.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaEta_200bins", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 200, -1.0, 1.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaEta_500bins", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 500, -1.0, 1.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaEta_100bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 100, -5.0, 5.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaEta_200bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 200, -5.0, 5.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaEta_500bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 500, -5.0, 5.0, VarManager::kDeltaEta_check);
       hm->AddHistogram(histClass, "PtMC", "", false, 200, 0.0, 20.0, VarManager::kMCPt);
       hm->AddHistogram(histClass, "EtaMC", "", false, 500, -5.0, 5.0, VarManager::kMCEta);
       //------------------------------------------------------------------------------------------------------------------------------
