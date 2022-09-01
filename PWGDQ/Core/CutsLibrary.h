@@ -380,15 +380,39 @@ AnalysisCompositeCut* o2::aod::dqcuts::GetCompositeCut(const char* cutName)
     return cut;
   }
 //--------------DQCHECKS---------------------------------------
-  if (!nameStr.compare("matchedFwdChi2Cut")) {
+  if (!nameStr.compare("matchedFwdChi2Cut_20")) {
     cut->AddCut(GetAnalysisCut("matchedFwd"));
-    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH"));
+    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH_20"));
     return cut;
   }
 
-  if (!nameStr.compare("matchedGlobalChi2Cut")) {
+  if (!nameStr.compare("matchedGlobalChi2Cut_20")) {
     cut->AddCut(GetAnalysisCut("matchedGlobal"));
-    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH"));
+    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH_20"));
+    return cut;
+  }
+
+  if (!nameStr.compare("matchedFwdChi2Cut_30")) {
+    cut->AddCut(GetAnalysisCut("matchedFwd"));
+    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH_30"));
+    return cut;
+  }
+
+  if (!nameStr.compare("matchedGlobalChi2Cut_30")) {
+    cut->AddCut(GetAnalysisCut("matchedGlobal"));
+    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH_30"));
+    return cut;
+  }
+
+  if (!nameStr.compare("matchedFwdChi2Cut_50")) {
+    cut->AddCut(GetAnalysisCut("matchedFwd"));
+    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH_50"));
+    return cut;
+  }
+
+  if (!nameStr.compare("matchedGlobalChi2Cut_50")) {
+    cut->AddCut(GetAnalysisCut("matchedGlobal"));
+    cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH_50"));
     return cut;
   }
   //------------------------------------------------------------
@@ -794,11 +818,22 @@ AnalysisCut* o2::aod::dqcuts::GetAnalysisCut(const char* cutName)
     cut->AddCut(VarManager::kMuonTrackType, -0.5, 0.5);
     return cut;
   }
+  //--------------DQCHECKS--------------------------------
+  if (!nameStr.compare("matchedChi2MatchingMFTMCH_20")) {
+    cut->AddCut(VarManager::kMuonChi2MatchMCHMFT, 0., 20.);
+    return cut;
+  }
 
-  if (!nameStr.compare("matchedChi2MatchingMFTMCH")) {
+  if (!nameStr.compare("matchedChi2MatchingMFTMCH_30")) {
+    cut->AddCut(VarManager::kMuonChi2MatchMCHMFT, 0., 30.);
+    return cut;
+  }
+
+  if (!nameStr.compare("matchedChi2MatchingMFTMCH_50")) {
     cut->AddCut(VarManager::kMuonChi2MatchMCHMFT, 0., 50.);
     return cut;
   }
+  //------------------------------------------------------
 
   if (!nameStr.compare("pairNoCut")) {
     cut->AddCut(VarManager::kMass, 0.0, 1000.0);
