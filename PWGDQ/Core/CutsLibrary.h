@@ -379,7 +379,7 @@ AnalysisCompositeCut* o2::aod::dqcuts::GetCompositeCut(const char* cutName)
     cut->AddCut(GetAnalysisCut("matchedGlobal"));
     return cut;
   }
-
+//--------------DQCHECKS---------------------------------------
   if (!nameStr.compare("matchedFwdChi2Cut")) {
     cut->AddCut(GetAnalysisCut("matchedFwd"));
     cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH"));
@@ -389,9 +389,9 @@ AnalysisCompositeCut* o2::aod::dqcuts::GetCompositeCut(const char* cutName)
   if (!nameStr.compare("matchedGlobalChi2Cut")) {
     cut->AddCut(GetAnalysisCut("matchedGlobal"));
     cut->AddCut(GetAnalysisCut("matchedChi2MatchingMFTMCH"));
-    cut->AddCut(GetAnalysisCut("muonLowPt"));
     return cut;
   }
+  //------------------------------------------------------------
 
   if (!nameStr.compare("pairNoCut")) {
     cut->AddCut(GetAnalysisCut("pairNoCut"));
