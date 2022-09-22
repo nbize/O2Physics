@@ -137,12 +137,12 @@ MCSignal* o2::aod::dqmcsignals::GetMCSignal(const char* name)
   }
   if (!nameStr.compare("muFromAnyCharm")) {
     MCProng prong(2, {13, 403}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
-    signal = new MCSignal(name, "Muon from AnyStrange decays", {prong}, {1});
+    signal = new MCSignal(name, "Muon from AnyCharm decays", {prong}, {1});
     return signal;
   }
   if (!nameStr.compare("muFromAnyStrange")) {
     MCProng prong(2, {13, 303}, {true, true}, {false, false}, {0, 0}, {0, 0}, {false, false});
-    signal = new MCSignal(name, "Muon from AnyCharm decays", {prong}, {1});
+    signal = new MCSignal(name, "Muon from AnyStrange decays", {prong}, {1});
     return signal;
   }
   if (!nameStr.compare("mumuFromJpsiFromB")) {
