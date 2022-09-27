@@ -145,6 +145,16 @@ MCSignal* o2::aod::dqmcsignals::GetMCSignal(const char* name)
     signal = new MCSignal(name, "Muon from AnyStrange decays", {prong}, {1});
     return signal;
   }
+  if (!nameStr.compare("muFromNonpromptJpsi")) {
+    MCProng prong(3, {13, 443, 503}, {true, true, true}, {false, false, false}, {0, 0, 0}, {0, 0, 0}, {false, false, false});
+    signal = new MCSignal(name, "Muons from beauty jpsi decays", {prong}, {-1});
+    return signal;
+  }
+  if (!nameStr.compare("muFromPromptJpsi")) {
+    MCProng prong(3, {13, 443, 503}, {true, true, true}, {false, false, true}, {0, 0, 0}, {0, 0, 0}, {false, false, false});
+    signal = new MCSignal(name, "Muons from prompt jpsi decays", {prong}, {-1});
+    return signal;
+  }
   if (!nameStr.compare("mumuFromJpsiFromB")) {
     MCProng prong(3, {13, 443, 521}, {true, true, true}, {false, false, false}, {0, 0, 0}, {0, 0, 0}, {false, false, false});
     signal = new MCSignal(name, "Muon pair from jpsi from B decays", {prong, prong}, {1, 1});
