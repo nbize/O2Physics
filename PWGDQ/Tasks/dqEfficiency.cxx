@@ -350,7 +350,6 @@ struct AnalysisMuonSelection {
         fMCSignals.push_back(*sig);
       }
     }
-
     // Configure histogram classes for each track cut;
     // Add histogram classes for each track cut and for each requested MC signal (reconstructed tracks with MC truth)
     TString histClasses = "Muon_BeforeCuts;";
@@ -396,6 +395,7 @@ struct AnalysisMuonSelection {
     uint32_t filterMap = 0;
     muonSel.reserve(muons.size());
     for (auto& muon : muons) {
+      //cout << "bit mask : " << muon.mcMask() << endl;
       filterMap = 0;
       VarManager::FillTrack<TMuonFillMap>(muon); // compute muon quantities
 
