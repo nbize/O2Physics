@@ -379,6 +379,24 @@ AnalysisCompositeCut* o2::aod::dqcuts::GetCompositeCut(const char* cutName)
     cut->AddCut(GetAnalysisCut("matchedGlobal"));
     return cut;
   }
+
+  if (!nameStr.compare("muonSelectVeryLowPt")) {
+    cut->AddCut(GetAnalysisCut("matchedGlobal"));
+    cut->AddCut(GetAnalysisCut("muonSelectVeryLowPt"));
+    return cut;
+  }
+
+  if (!nameStr.compare("muonSelectMidPt")) {
+    cut->AddCut(GetAnalysisCut("matchedGlobal"));
+    cut->AddCut(GetAnalysisCut("muonSelectMidPt"));
+    return cut;
+  }
+  
+  if (!nameStr.compare("muonSelectHighPt")) {
+    cut->AddCut(GetAnalysisCut("matchedGlobal"));
+    cut->AddCut(GetAnalysisCut("muonSelectHighPt"));
+    return cut;
+  }
 //--------------DQCHECKS---------------------------------------
   if (!nameStr.compare("matchedFwdChi2Cut_20")) {
     cut->AddCut(GetAnalysisCut("matchedFwd"));
@@ -792,6 +810,21 @@ AnalysisCut* o2::aod::dqcuts::GetAnalysisCut(const char* cutName)
 
   if (!nameStr.compare("muonHighPt")) {
     cut->AddCut(VarManager::kPt, 4.0, 1000.0);
+    return cut;
+  }
+
+  if (!nameStr.compare("muonSelectVeryLowPt")) {
+    cut->AddCut(VarManager::kPt, 0.0, 1.0);
+    return cut;
+  }
+
+  if (!nameStr.compare("muonSelectMidPt")) {
+    cut->AddCut(VarManager::kPt, 1.0, 1000.0);
+    return cut;
+  }
+  
+  if (!nameStr.compare("muonSelectHighPt")) {
+    cut->AddCut(VarManager::kPt, 5.0, 1000.0);
     return cut;
   }
 
