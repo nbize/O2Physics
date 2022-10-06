@@ -312,10 +312,12 @@ struct AnalysisMuonSelection {
     VarManager::FillEvent<TEventFillMap>(event);
 
     muonSel.reserve(muons.size());
+    cout << "muons size = " << muons.size() << endl;
     uint32_t filterMap = 0;
     int iCut = 0;
-
+    cout << "BEGIN FOR LOOP" << endl;
     for (auto& muon : muons) {
+      cout << "LOOP OVER MUONS" << endl;
       filterMap = 0;
       VarManager::FillTrack<TMuonFillMap>(muon);
       if (fConfigQA) { // TODO: make this compile time
@@ -333,10 +335,12 @@ struct AnalysisMuonSelection {
       }
       muonSel(static_cast<int>(filterMap));
     } // end loop over tracks
+    cout << "END FOR LOOP" << endl;
   }
 
   void processSkimmed(MyEvents::iterator const& event, MyMuonTracks const& muons)
   {
+    cout << "############# Run Selection Muon ###############" << endl;
     runMuonSelection<gkEventFillMap, gkMuonFillMap>(event, muons);
   }
   void processDummy(MyEvents&)
@@ -687,10 +691,10 @@ struct AnalysisSameEventPairing {
     ccdb->setCaching(true);
     ccdb->setLocalObjectValidityChecking();
     ccdb->setCreatedNotAfter(nolaterthan.value);
-    auto histCCDB = ccdb->get<TH1F>(ccdbPath.value);
+    /*auto histCCDB = ccdb->get<TH1F>(ccdbPath.value);
     if (!histCCDB) {
       LOGF(fatal, "CCDB histogram not found");
-    }
+    }*/
 
     DefineHistograms(fHistMan, histNames.Data());    // define all histograms
     VarManager::SetUseVars(fHistMan->GetUsedVars()); // provide the list of required variables so that VarManager knows what to fill
