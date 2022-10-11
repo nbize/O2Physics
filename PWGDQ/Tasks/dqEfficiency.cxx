@@ -386,9 +386,11 @@ struct AnalysisMuonSelection {
     // fill event information which might be needed in histograms that combine track and event properties
     VarManager::FillEvent<TEventFillMap>(event);
     if constexpr ((TEventMCFillMap & VarManager::ObjTypes::ReducedEventMC) > 0) {
+      cout << "here we take the reducedMCevent" << endl;
       VarManager::FillEvent<TEventMCFillMap>(event.reducedMCevent());
     }
     if constexpr ((TEventMCFillMap & VarManager::ObjTypes::CollisionMC) > 0) {
+      cout << "here we take the mcCollision" << endl;
       VarManager::FillEvent<TEventMCFillMap>(event.mcCollision());
     }
 
@@ -401,10 +403,12 @@ struct AnalysisMuonSelection {
 
       // compute MC matched quantities using either the DQ skimmed or the Framework data models
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::ReducedMuon) > 0) {
+        cout << "here we take the reducedMCTrack" << endl;
         VarManager::FillTrack<gkParticleMCFillMap>(muon.reducedMCTrack());
         //cout << muon.mothers_as<aod::McParticles>() << endl;
       }
       if constexpr ((TMuonFillMap & VarManager::ObjTypes::Muon) > 0) {
+        cout << "here we take the McParticles_001" << endl;
         VarManager::FillTrack<gkParticleMCFillMap>(muon.template mcParticle_as<aod::McParticles_001>());
       }
       if (fConfigQA) {

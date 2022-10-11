@@ -189,6 +189,7 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "Chi2", "", false, 100, 0.0, 200.0, VarManager::kMuonChi2);
       hm->AddHistogram(histClass, "Chi2MCHMID", "", false, 100, 0.0, 200.0, VarManager::kMuonChi2MatchMCHMID);
       hm->AddHistogram(histClass, "Chi2MCHMFT", "", false, 100, 0.0, 200.0, VarManager::kMuonChi2MatchMCHMFT);
+      hm->AddHistogram(histClass, "Chi2MCHMFT_rebin", "", false, 200, 0.0, 200.0, VarManager::kMuonChi2MatchMCHMFT);
       hm->AddHistogram(histClass, "Chi2MatchScoreMCHMFT", "", false, 100, 0.0, 200.0, VarManager::kMuonMatchScoreMCHMFT);
       hm->AddHistogram(histClass, "MuonCXX", "", false, 100, -1.0, 1.0, VarManager::kMuonCXX);
       hm->AddHistogram(histClass, "MuonCYY", "", false, 100, -1.0, 1.0, VarManager::kMuonCYY);
@@ -197,7 +198,7 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "MuonC1Pt21Pt2", "", false, 100, -1.0, 1.0, VarManager::kMuonC1Pt21Pt2);
       hm->AddHistogram(histClass, "MCHBitMap_vs_pt", "MCH vs pt", false, 1025, 0.0, 1025.0, VarManager::kMCHBitMap, 400, 0, 100, VarManager::kPt);
       //-------------------------------------DQ CHECKS--------------------------------------------------------------------------------
-      hm->AddHistogram(histClass, "DeltaPt_100bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 100, -1.0, 1.0, VarManager::kDeltaPt_check);
+      /*hm->AddHistogram(histClass, "DeltaPt_100bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 100, -1.0, 1.0, VarManager::kDeltaPt_check);
       hm->AddHistogram(histClass, "DeltaPt_200bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 200, -1.0, 1.0, VarManager::kDeltaPt_check);
       hm->AddHistogram(histClass, "DeltaPt_500bins", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 500, -1.0, 1.0, VarManager::kDeltaPt_check);
       hm->AddHistogram(histClass, "DeltaPt_100bins_wide", "#Deltap_{T} = p_{T}_{MC} - p_{T}", false, 100, -5.0, 5.0, VarManager::kDeltaPt_check);
@@ -208,7 +209,7 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
       hm->AddHistogram(histClass, "DeltaEta_500bins", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 500, -1.0, 1.0, VarManager::kDeltaEta_check);
       hm->AddHistogram(histClass, "DeltaEta_100bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 100, -5.0, 5.0, VarManager::kDeltaEta_check);
       hm->AddHistogram(histClass, "DeltaEta_200bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 200, -5.0, 5.0, VarManager::kDeltaEta_check);
-      hm->AddHistogram(histClass, "DeltaEta_500bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 500, -5.0, 5.0, VarManager::kDeltaEta_check);
+      hm->AddHistogram(histClass, "DeltaEta_500bins_wide", "#Delta#eta = #eta_{MC} - #eta_{Rec}", false, 500, -5.0, 5.0, VarManager::kDeltaEta_check);*/
       hm->AddHistogram(histClass, "PtMC", "", false, 200, 0.0, 20.0, VarManager::kMCPt);
       hm->AddHistogram(histClass, "EtaMC", "", false, 500, -5.0, 5.0, VarManager::kMCEta);
       //------------------------------------------------------------------------------------------------------------------------------
