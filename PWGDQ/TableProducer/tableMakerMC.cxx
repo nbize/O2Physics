@@ -478,6 +478,8 @@ struct TableMakerMC {
           trackTempFilterMap = uint8_t(0);
 
           if (!muon.has_mcParticle()) {
+            //fCounters[9]++;
+            //cout << "fCounter[9] = " << fCounters[9] << endl;
             continue;
           }
 
@@ -514,6 +516,8 @@ struct TableMakerMC {
           trackTempFilterMap = uint8_t(0);
 
           if (!muon.has_mcParticle()) {
+            //fCounters[10]++;
+            //cout << "fCounter[10] = " << fCounters[10] << endl;
             continue;
           }
           auto mctrack = muon.template mcParticle_as<aod::McParticles_001>();
