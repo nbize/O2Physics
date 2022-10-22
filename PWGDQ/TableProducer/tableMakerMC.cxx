@@ -521,6 +521,7 @@ struct TableMakerMC {
             continue;
           }
           auto mctrack = muon.template mcParticle_as<aod::McParticles_001>();
+          //cout << mctrack.pdgCode() << endl;
           VarManager::FillTrack<TMuonFillMap>(muon);
           VarManager::FillTrack<gkParticleMCFillMap>(mctrack);
 
