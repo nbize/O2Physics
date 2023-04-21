@@ -14,6 +14,16 @@ o2physics_add_dpl_workflow(table-reader
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::AnalysisCore O2Physics::PWGDQCore
                     COMPONENT_NAME Analysis)
 
+o2physics_add_dpl_workflow(test-ttree-reader
+                    SOURCES testTTreeReader.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::AnalysisCore O2Physics::PWGDQCore
+                    COMPONENT_NAME Analysis)
+
+o2physics_add_dpl_workflow(snd-vertexing
+                    SOURCES secondvtx.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::AnalysisCore O2Physics::PWGDQCore
+                    COMPONENT_NAME Analysis)
+
 o2physics_add_dpl_workflow(efficiency
                     SOURCES dqEfficiency.cxx
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::AnalysisCore O2Physics::PWGDQCore
