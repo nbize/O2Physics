@@ -32,24 +32,22 @@ struct mumuReader {
   OutputObj<TH1F> chi2MCHMIDRight{TH1F("chi2MCHMIDRight", "chi2MCHMIDRight", 100, 0., 16.)};
   OutputObj<TH1F> hRapidityAll{TH1F("Rapidity", "Rapidity", 267, 2., 4.)};
   OutputObj<TH1F> hRapidityMCHMFT{TH1F("RapidityMCHMFT", "RapidityMCHMFT", 267, 2., 4.)};
-  // std::array<TH1F*, 201> hMassChi2Cuts;
-  // TFile* file = new TFile("massChi2Cuts.root", "RECREATE");
 
   // histogram registry test
   HistogramRegistry registry{
     "registry",
-    {{"mass", "M", {HistType::kTH1F, {{750, 0, 15}}}}}};
+    {{"mass", "M", {HistType::kTH1F, {{750, 0, 15}}}}
+     }};
   // end of histogram registry test
-  // TFile* file = nullptr;
 
-  // OutputObj<TH1F> hRapidityAll{TH1F("Rapidity", "Rapidity", 267, 2., 4.)};
-  void init(o2::framework::InitContext&){
-    /*for (int i = 0; i < hMassChi2Cuts.size(); i++) {
-      LOG(info) << "chi2 cut histogram creating...";
-      hMassChi2Cuts[i] = new TH1F(Form("hMassChi2_Cut%d", i), Form("Cut%d", i), 750, 0, 15);
-    }
-    LOG(info) << "Opening output file";*/
-    //registry.add();
+  void init(o2::framework::InitContext&)
+  {
+    AxisSpec massAxis = {750, 0, 15, "M"};
+    AxisSpec chi2Axis1 = {200,0,200,"#chi^2_{MCH-MFT} for mu 1"};
+    AxisSpec chi2Axis2 = {200,0,200,"#chi^2_{MCH-MFT} for mu 2"};
+    HistogramConfigSpec histospec({HistType::kTH3F, {massAxis,chi2Axis1,chi2Axis2}});
+
+    registry.add("massTH3","Mass TH3 Histogram", histospec);
   };
 
   void process(aod::DimuonsAll const& dimuons)
@@ -60,47 +58,20 @@ struct mumuReader {
       auto rap = -ROOT::Math::log((ROOT::Math::sqrt(dimuon.mass() * dimuon.mass() + dimuon.pt() * dimuon.pt() * ROOT::Math::cosh(dimuon.eta()) * ROOT::Math::cosh(dimuon.eta())) + dimuon.pt() * ROOT::Math::sinh(dimuon.eta())) / (ROOT::Math::sqrt(dimuon.mass() * dimuon.mass() + dimuon.pt() * dimuon.pt())));
       hRapidityAll->Fill(rap);
 
-      if (dimuon.phi1() > 3.14 / 2 || dimuon.phi2() < -3.14 / 2) {
-        chi2MCHMIDLeft->Fill(dimuon.chi2MatchMCHMID2());
-      } else if (dimuon.phi1() < 3.14 / 2 && dimuon.phi2() > -3.14 / 2) {
+      if (dimuon.phi1() > 3.14 / 2 || dimuon.phi1() < -3.14 / 2) {
+        chi2MCHMIDLeft->Fill(dimuon.chi2MatchMCHMID1());
+      } else if (dimuon.phi1() < 3.14 / 2 && dimuon.phi1() > -3.14 / 2) {
         chi2MCHMIDRight->Fill(dimuon.chi2MatchMCHMID1());
-      } // end MCH MID chi2 check
-
+      }                                                                                                       // end MCH MID chi2 check
       if ((dimuon.eta1() > -3.6 && dimuon.eta1() < -2.5) && (dimuon.eta2() > -3.6 && dimuon.eta2() < -2.5)) { // cut on eta in mft acceptance
         if (dimuon.chi2MatchMCHMFT1() > 0 && dimuon.chi2MatchMCHMFT2() > 0) {
           hRapidityMCHMFT->Fill(rap);
           if (dimuon.sign() == 0) {
-            /*for (int icut = 1; icut < hMassChi2Cuts.size(); icut++) // loop over all chi2 cut histos
-            {
-              if (dimuon.chi2MatchMCHMFT1() < icut && dimuon.chi2MatchMCHMFT2() < icut) {
-                //hMassChi2Cuts[icut]->Fill(dimuon.mass());
-              }
-            }*/
+            registry.get<TH3>(HIST("massTH3"))->Fill(dimuon.mass(),dimuon.chi2MatchMCHMFT1(),dimuon.chi2MatchMCHMFT2());
           } // end sign selection
         }   // end MCH-MFT chi2 selection
       }     // end eta cut
     }
-    /*
-    LOG(info) << "before opening";
-    file->TFile::Open("massChi2Cuts.root", "RECREATE");
-    LOG(info) << "after opening";
-    LOG(info) << "before loop";
-    for (int icut = 0; icut < hMassChi2Cuts.size(); icut++) {
-      if (!file || file->IsZombie()) {
-        LOG(info) << "file issue";
-        continue;
-      }
-    // LOG(info) << "write";
-    hMassChi2Cuts[icut]->GetXaxis()->SetRangeUser(2, 5);
-    // file->TFile::WriteObject(hMassChi2Cuts[icut],Form("hMassChi2is0to%d", icut));
-    LOG(info) << "before writing";
-    hMassChi2Cuts[icut]->TObject::Write(Form("hMassChi2is0to%d", icut));
-    LOG(info) << "after writing";
-    //  file->TFile::Close();
-  }
-  LOG(info) << " after loop";
-  delete file;
-  */
   };
 };
 
