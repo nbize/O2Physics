@@ -411,6 +411,9 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
         hm->AddHistogram(histClass, "LxyErr", "", false, 100, 0.0, 10.0, VarManager::kVertexingLxyErr);
         hm->AddHistogram(histClass, "LxyzErr", "", false, 100, 0.0, 10.0, VarManager::kVertexingLxyzErr);
         hm->AddHistogram(histClass, "TauxyErr", "", false, 100, 0.0, 10.0, VarManager::kVertexingTauxyErr);
+        hm->AddHistogram(histClass, "DeltaX", "", false, 100, -10., 10., VarManager::kVertexingDeltaX);
+        hm->AddHistogram(histClass, "DeltaY", "", false, 100, -10., 10., VarManager::kVertexingDeltaY);
+        hm->AddHistogram(histClass, "DeltaZ", "", false, 100, -10., 10., VarManager::kVertexingDeltaZ);
         hm->AddHistogram(histClass, "VtxingProcCode", "", false, 10, 0.0, 10.0, VarManager::kVertexingProcCode);
         hm->AddHistogram(histClass, "VtxingChi2PCA", "", false, 100, 0.0, 10.0, VarManager::kVertexingChi2PCA);
         hm->AddHistogram(histClass, "KFMass", "", false, 500, 0.0, 5.0, VarManager::kKFMass);
@@ -458,6 +461,9 @@ void o2::aod::dqhistograms::DefineHistograms(HistogramManager* hm, const char* h
         hm->AddHistogram(histClass, "Lxyz", "", false, 100, 0.0, 10.0, VarManager::kVertexingLxyz);
         hm->AddHistogram(histClass, "Lz", "", false, 100, 0.0, 10.0, VarManager::kVertexingLz);
         hm->AddHistogram(histClass, "Tauz", "", false, 100, -0.01, 0.01, VarManager::kVertexingTauz);
+        hm->AddHistogram(histClass, "deltaX", "", false, 1000, -10.,10.,VarManager::kVertexingDeltaX);
+        hm->AddHistogram(histClass, "deltaY", "", false, 1000, -10.,10.,VarManager::kVertexingDeltaY);
+        hm->AddHistogram(histClass, "deltaZ", "", false, 1000, -10.,10.,VarManager::kVertexingDeltaZ);
         hm->AddHistogram(histClass, "LxyzErr", "", false, 100, 0.0, 10.0, VarManager::kVertexingLxyzErr);
         hm->AddHistogram(histClass, "LzErr", "", false, 100, 0.0, 10.0, VarManager::kVertexingLzErr);
         hm->AddHistogram(histClass, "TauzErr", "", false, 100, 0.0, 10.0, VarManager::kVertexingTauzErr);

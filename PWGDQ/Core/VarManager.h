@@ -336,6 +336,9 @@ class VarManager : public TObject
     kVertexingLzErr,
     kVertexingTauxy,
     kVertexingTauxyErr,
+    kVertexingDeltaX,
+    kVertexingDeltaY,
+    kVertexingDeltaZ,
     kVertexingTauz,
     kVertexingTauzErr,
     kVertexingProcCode,
@@ -1455,6 +1458,9 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
 
       values[kVertexingTauxy] = -999.;
       values[kVertexingTauz] = -999.;
+      values[kVertexingDeltaX] = -999.;
+      values[kVertexingDeltaY] = -999.;
+      values[kVertexingDeltaZ] = -999.;
       values[kVertexingTauxyErr] = -999.;
       values[kVertexingTauzErr] = -999.;
       return;
@@ -1541,6 +1547,10 @@ void VarManager::FillPairVertexing(C const& collision, T const& t1, T const& t2,
 
       values[kVertexingTauzErr] = values[kVertexingLzErr] * v12.M() / (TMath::Abs(v12.Pz()) * o2::constants::physics::LightSpeedCm2NS);
       values[kVertexingTauxyErr] = values[kVertexingLxyErr] * v12.M() / (v12.P() * o2::constants::physics::LightSpeedCm2NS);
+
+      values[kVertexingDeltaX] = collision.posX() - secondaryVertex[0];
+      values[kVertexingDeltaY] = collision.posY() - secondaryVertex[1];
+      values[kVertexingDeltaZ] = collision.posZ() - secondaryVertex[2];
     }
   } else {
     KFParticle trk0KF;
