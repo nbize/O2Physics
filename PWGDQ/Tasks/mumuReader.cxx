@@ -42,6 +42,9 @@ struct mumuReader {
   OutputObj<TH1F> hdeltaZ{TH1F("deltaZ", "deltaZ", 1000, -10., 10.)};
   OutputObj<TH1F> hChi2MCHMFT{TH1F("Chi2MCHMFT", "Chi2MCHMFT", 250, -50., 200.)};
 
+  OutputObj<TH1F> hAmbiguous_mu1{TH1F("Ambiguous1", "Ambiguous from mu 1", 10, -5., 5.)};
+  OutputObj<TH1F> hAmbiguous_mu2{TH1F("Ambiguous2", "Ambiguous from mu 2", 10, -5., 5.)};
+
   Configurable<bool> usePhi{"usePhi", false, "If true, use phi method"};
   Configurable<bool> useMomentum{"useMomentum", false, "If true, use momentum method"};
   Configurable<Double_t> ptCut{"ptCut", 0.5, "pt cut, default = 0.5"};
