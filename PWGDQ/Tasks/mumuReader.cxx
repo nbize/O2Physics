@@ -41,9 +41,8 @@ struct mumuReader {
   OutputObj<TH1F> hTauz{TH1F("Tauz", "Tauz", 100, -0.01, 0.01)};
   OutputObj<TH1F> hdeltaZ{TH1F("deltaZ", "deltaZ", 1000, -10., 10.)};
   OutputObj<TH1F> hChi2MCHMFT{TH1F("Chi2MCHMFT", "Chi2MCHMFT", 250, -50., 200.)};
-
-  OutputObj<TH1F> hAmbiguous_mu1{TH1F("Ambiguous1", "Ambiguous from mu 1", 10, -5., 5.)};
-  OutputObj<TH1F> hAmbiguous_mu2{TH1F("Ambiguous2", "Ambiguous from mu 2", 10, -5., 5.)};
+  OutputObj<TH1F> hchi2MCHMFTLeft{TH1F("Chi2MCHMFTLeft", "Chi2MCHMFTLeft", 200, 0., 200.)};
+  OutputObj<TH1F> hchi2MCHMFTRight{TH1F("Chi2MCHMFTRight", "Chi2MCHMFTRight", 200, 0., 200.)};
 
   Configurable<bool> usePhi{"usePhi", false, "If true, use phi method"};
   Configurable<bool> useMomentum{"useMomentum", false, "If true, use momentum method"};
@@ -59,13 +58,15 @@ struct mumuReader {
   {
     AxisSpec massAxis = {750, 0, 15, "M"};
     AxisSpec ptAxis = {120, 0.0, 30.0, "p_{T}"};
-    AxisSpec ambiAxis = {5,-1,4,"isAmbi"};
+    AxisSpec rapAxis = {200, 2.5, 4.0,"y"};
+    AxisSpec ambiAxis = {50,-1,4,"isAmbi"};
     AxisSpec chi2Axis1 = {200, 0, 200, "#chi^2_{MCH-MFT} for mu 1"};
     AxisSpec chi2Axis2 = {200, 0, 200, "#chi^2_{MCH-MFT} for mu 2"};
     HistogramConfigSpec histospec({HistType::kTH3F, {massAxis, chi2Axis1, chi2Axis2}});
     HistogramConfigSpec massSpec({HistType::kTH1F, {massAxis}});
     HistogramConfigSpec ptSpec({HistType::kTH1F, {ptAxis}});
     HistogramConfigSpec ambiSpec({HistType::kTH1F, {ambiAxis}});
+    HistogramConfigSpec rapSpec({HistType::kTH1F, {rapAxis}});
 
     // MUON standalone studies
     registry.add("JPsiXPos", "JPsi X pos", massSpec);
@@ -82,10 +83,20 @@ struct mumuReader {
     registry.add("JPsiPt01", "JPsi pt 0 - 1", massSpec);
     registry.add("JPsiPt12", "JPsi pt 1 - 2", massSpec);
     registry.add("JPsiPt23", "JPsi pt 2 - 3", massSpec);
+    
     registry.add("JPsiPt34", "JPsi pt 3 - 4", massSpec);
     registry.add("JPsiPt45", "JPsi pt 4 - 5", massSpec);
     registry.add("JPsiPt58", "JPsi pt 5 - 8", massSpec);
     registry.add("JPsiPt812", "JPsi pt 8 - 12", massSpec);
+
+    registry.add("JPsiPt35", "JPsi pt 3 - 5", massSpec);
+    registry.add("JPsiPt57", "JPsi pt 5 - 7", massSpec);
+    registry.add("JPsiPt710", "JPsi pt 7 - 10", massSpec);
+
+    // rapidity bins
+    registry.add("JPsiRap253", "JPsi y 2.5 - 3", massSpec);
+    registry.add("JPsiRap335", "JPsi y 3 - 3.5", massSpec);
+    registry.add("JPsiRap354", "JPsi y 3.5 - 4", massSpec);
 
     // ambiguous tracks
     registry.add("ambiguous1", "ambiguous mu 1", ambiSpec);
@@ -127,7 +138,7 @@ struct mumuReader {
                 registry.get<TH1>(HIST("ambiguous1"))->Fill(dimuon.isAmbig1());
                 registry.get<TH1>(HIST("ambiguous2"))->Fill(dimuon.isAmbig2());
                 // pt bins
-                if (dimuon.pt() < 1){
+                if (dimuon.pt() > 0 && dimuon.pt() < 1){
                   registry.get<TH1>(HIST("JPsiPt01"))->Fill(dimuon.mass());
                 }
                 if (dimuon.pt() > 1 && dimuon.pt() < 2){
@@ -147,6 +158,27 @@ struct mumuReader {
                 }
                 if (dimuon.pt() > 8 && dimuon.pt() < 12){
                   registry.get<TH1>(HIST("JPsiPt812"))->Fill(dimuon.mass());
+                }
+                // different pt bins
+                if (dimuon.pt() > 3 && dimuon.pt() < 5){
+                  registry.get<TH1>(HIST("JPsiPt35"))->Fill(dimuon.mass());
+                }
+                if (dimuon.pt() > 5 && dimuon.pt() < 7){
+                  registry.get<TH1>(HIST("JPsiPt57"))->Fill(dimuon.mass());
+                }
+                if (dimuon.pt() > 7 && dimuon.pt() < 10){
+                  registry.get<TH1>(HIST("JPsiPt710"))->Fill(dimuon.mass());
+                }
+
+                // rapidity bins
+                if(rap > 2.5 && rap < 3.){
+                  registry.get<TH1>(HIST("JPsiRap253"))->Fill(dimuon.mass());
+                }
+                if(rap > 3. && rap < 3.5){
+                  registry.get<TH1>(HIST("JPsiRap335"))->Fill(dimuon.mass());
+                }
+                if(rap > 3.5 && rap < 4.){
+                  registry.get<TH1>(HIST("JPsiRap354"))->Fill(dimuon.mass());
                 }
 
                 if (usePhi) {
@@ -219,7 +251,7 @@ struct mumuReader {
         if (dimuon.sign() == 0) {
           hdeltaZ->Fill(deltaZ);
         }
-
+        
         if (dimuon.chi2MatchMCHMFT1() > 0 && dimuon.chi2MatchMCHMFT2() > 0) {
           hRapidityMCHMFT->Fill(rap);
           if (dimuon.sign() == 0) {
@@ -228,6 +260,11 @@ struct mumuReader {
               if (dimuon.chi2MatchMCHMFT1() < 45 && dimuon.chi2MatchMCHMFT2() < 45) {
                 hTauz->Fill(dimuon.tauz());
               }
+              if (px1 < 0. && px2 < 0.) {
+                    hchi2MCHMFTLeft->Fill(dimuon.chi2MatchMCHMFT1());
+                  } else if (px1 > 0. && px2 > 0.) {
+                    hchi2MCHMFTRight->Fill(dimuon.chi2MatchMCHMFT1());
+                  }
               registry.get<TH3>(HIST("massTH3"))->Fill(dimuon.mass(), dimuon.chi2MatchMCHMFT1(), dimuon.chi2MatchMCHMFT2());
             } // end rapidity cut
           }   // end sign selection
