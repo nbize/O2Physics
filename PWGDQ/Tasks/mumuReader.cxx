@@ -58,14 +58,16 @@ struct mumuReader {
   {
     AxisSpec massAxis = {750, 0, 15, "M"};
     AxisSpec ptAxis = {120, 0.0, 30.0, "p_{T}"};
-    AxisSpec rapAxis = {200, 2.5, 4.0,"y"};
-    AxisSpec ambiAxis = {50,-1,4,"isAmbi"};
+    AxisSpec rapAxis = {200, 2.5, 4.0, "y"};
+    AxisSpec ambiAxis = {50, -1, 4, "isAmbi"};
     AxisSpec chi2Axis1 = {200, 0, 200, "#chi^2_{MCH-MFT} for mu 1"};
     AxisSpec chi2Axis2 = {200, 0, 200, "#chi^2_{MCH-MFT} for mu 2"};
+    AxisSpec trackChi2Axis = {100, 0.0, 200.0, "#chi^2"};
     HistogramConfigSpec histospec({HistType::kTH3F, {massAxis, chi2Axis1, chi2Axis2}});
     HistogramConfigSpec massSpec({HistType::kTH1F, {massAxis}});
     HistogramConfigSpec ptSpec({HistType::kTH1F, {ptAxis}});
     HistogramConfigSpec ambiSpec({HistType::kTH1F, {ambiAxis}});
+    HistogramConfigSpec trackChi2Spec({HistType::kTH1F, {trackChi2Axis}});
     HistogramConfigSpec rapSpec({HistType::kTH1F, {rapAxis}});
 
     // MUON standalone studies
@@ -76,6 +78,8 @@ struct mumuReader {
     registry.add("JPsiYNeg", "JPsi Y neg", massSpec);
     registry.add("JPsiYNeutral", "JPsi Y neutral", massSpec);
     registry.add("JPsiStandard", "JPsi standard", massSpec);
+    registry.add("JPsiStandardNoAmbig", "JPsi standard without ambiguous tracks", massSpec);
+    registry.add("JPsiStandardAmbigOnly","JPsi standard with ambiguous tracks only", massSpec);
 
     // pt bins
     registry.add("Pt", "pt distribution", ptSpec);
@@ -83,7 +87,7 @@ struct mumuReader {
     registry.add("JPsiPt01", "JPsi pt 0 - 1", massSpec);
     registry.add("JPsiPt12", "JPsi pt 1 - 2", massSpec);
     registry.add("JPsiPt23", "JPsi pt 2 - 3", massSpec);
-    
+
     registry.add("JPsiPt34", "JPsi pt 3 - 4", massSpec);
     registry.add("JPsiPt45", "JPsi pt 4 - 5", massSpec);
     registry.add("JPsiPt58", "JPsi pt 5 - 8", massSpec);
@@ -125,133 +129,139 @@ struct mumuReader {
 
       // secondary vertexing test
       auto deltaZ = (dimuon.tauz() * pz) / dimuon.mass();
+      
+        if ((dimuon.eta1() > -4 && dimuon.eta1() < -2.5) && (dimuon.eta2() > -4 && dimuon.eta2() < -2.5)) { // cut on eta in mft acceptance
+          if (dimuon.pt1() >= ptCut && dimuon.pt2() >= ptCut) {
+            if (dimuon.sign() == 0) {
+              if (dimuon.chi2MatchMCHMFT1() <= 0. && dimuon.chi2MatchMCHMFT2() <= 0.) {
+                if (rap > 2.5 && rap < 4) {
+                  // MCH-MID chi2 studies
+                  registry.get<TH1>(HIST("JPsiStandard"))->Fill(dimuon.mass());
 
-      if ((dimuon.eta1() > -4 && dimuon.eta1() < -2.5) && (dimuon.eta2() > -4 && dimuon.eta2() < -2.5)) { // cut on eta in mft acceptance
-        if (dimuon.pt1() >= ptCut && dimuon.pt2() >= ptCut) {
-          if (dimuon.sign() == 0) {
-            if (dimuon.chi2MatchMCHMFT1() <= 0. && dimuon.chi2MatchMCHMFT2() <= 0.) {
-              if (rap > 2.5 && rap < 4) {
-                // MCH-MID chi2 studies
-                registry.get<TH1>(HIST("JPsiStandard"))->Fill(dimuon.mass());
-
-                // ambiguous tracks studies
-                registry.get<TH1>(HIST("ambiguous1"))->Fill(dimuon.isAmbig1());
-                registry.get<TH1>(HIST("ambiguous2"))->Fill(dimuon.isAmbig2());
-                // pt bins
-                if (dimuon.pt() > 0 && dimuon.pt() < 1){
-                  registry.get<TH1>(HIST("JPsiPt01"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 1 && dimuon.pt() < 2){
-                  registry.get<TH1>(HIST("JPsiPt12"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 2 && dimuon.pt() < 3){
-                  registry.get<TH1>(HIST("JPsiPt23"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 3 && dimuon.pt() < 4){
-                  registry.get<TH1>(HIST("JPsiPt34"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 4 && dimuon.pt() < 5){
-                  registry.get<TH1>(HIST("JPsiPt45"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 5 && dimuon.pt() < 8){
-                  registry.get<TH1>(HIST("JPsiPt58"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 8 && dimuon.pt() < 12){
-                  registry.get<TH1>(HIST("JPsiPt812"))->Fill(dimuon.mass());
-                }
-                // different pt bins
-                if (dimuon.pt() > 3 && dimuon.pt() < 5){
-                  registry.get<TH1>(HIST("JPsiPt35"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 5 && dimuon.pt() < 7){
-                  registry.get<TH1>(HIST("JPsiPt57"))->Fill(dimuon.mass());
-                }
-                if (dimuon.pt() > 7 && dimuon.pt() < 10){
-                  registry.get<TH1>(HIST("JPsiPt710"))->Fill(dimuon.mass());
-                }
-
-                // rapidity bins
-                if(rap > 2.5 && rap < 3.){
-                  registry.get<TH1>(HIST("JPsiRap253"))->Fill(dimuon.mass());
-                }
-                if(rap > 3. && rap < 3.5){
-                  registry.get<TH1>(HIST("JPsiRap335"))->Fill(dimuon.mass());
-                }
-                if(rap > 3.5 && rap < 4.){
-                  registry.get<TH1>(HIST("JPsiRap354"))->Fill(dimuon.mass());
-                }
-
-                if (usePhi) {
-                  if (dimuon.phi1() > PI / 2 || dimuon.phi1() < -PI / 2) {
-                    hchi2MCHMIDLeft->Fill(dimuon.chi2MatchMCHMID1());
-                  } else if (dimuon.phi1() < PI / 2 && dimuon.phi1() > -PI / 2) {
-                    hchi2MCHMIDRight->Fill(dimuon.chi2MatchMCHMID1());
+                  // ambiguous tracks studies
+                  registry.get<TH1>(HIST("ambiguous1"))->Fill(dimuon.isAmbig1());
+                  registry.get<TH1>(HIST("ambiguous2"))->Fill(dimuon.isAmbig2());
+                  if (!(dimuon.isAmbig1()) && !(dimuon.isAmbig2())) {
+                    registry.get<TH1>(HIST("JPsiStandardNoAmbig"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.isAmbig1() && dimuon.isAmbig2()) {
+                    registry.get<TH1>(HIST("JPsiStandardAmbigOnly"))->Fill(dimuon.mass());
+                  }
+                  // pt bins
+                  if (dimuon.pt() > 0 && dimuon.pt() < 1) {
+                    registry.get<TH1>(HIST("JPsiPt01"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 1 && dimuon.pt() < 2) {
+                    registry.get<TH1>(HIST("JPsiPt12"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 2 && dimuon.pt() < 3) {
+                    registry.get<TH1>(HIST("JPsiPt23"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 3 && dimuon.pt() < 4) {
+                    registry.get<TH1>(HIST("JPsiPt34"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 4 && dimuon.pt() < 5) {
+                    registry.get<TH1>(HIST("JPsiPt45"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 5 && dimuon.pt() < 8) {
+                    registry.get<TH1>(HIST("JPsiPt58"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 8 && dimuon.pt() < 12) {
+                    registry.get<TH1>(HIST("JPsiPt812"))->Fill(dimuon.mass());
+                  }
+                  // different pt bins
+                  if (dimuon.pt() > 3 && dimuon.pt() < 5) {
+                    registry.get<TH1>(HIST("JPsiPt35"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 5 && dimuon.pt() < 7) {
+                    registry.get<TH1>(HIST("JPsiPt57"))->Fill(dimuon.mass());
+                  }
+                  if (dimuon.pt() > 7 && dimuon.pt() < 10) {
+                    registry.get<TH1>(HIST("JPsiPt710"))->Fill(dimuon.mass());
                   }
 
-                  if ((dimuon.phi1() > PI / 2 || dimuon.phi1() < -PI / 2) && (dimuon.phi2() > PI / 2 || dimuon.phi2() < -PI / 2)) {
-                    registry.get<TH1>(HIST("JPsiXNeg"))->Fill(dimuon.mass());
+                  // rapidity bins
+                  if (rap > 2.5 && rap < 3.) {
+                    registry.get<TH1>(HIST("JPsiRap253"))->Fill(dimuon.mass());
+                  }
+                  if (rap > 3. && rap < 3.5) {
+                    registry.get<TH1>(HIST("JPsiRap335"))->Fill(dimuon.mass());
+                  }
+                  if (rap > 3.5 && rap < 4.) {
+                    registry.get<TH1>(HIST("JPsiRap354"))->Fill(dimuon.mass());
                   }
 
-                  if ((dimuon.phi1() < PI / 2 && dimuon.phi1() > -PI / 2) && (dimuon.phi2() < PI / 2 && dimuon.phi2() > -PI / 2)) {
-                    registry.get<TH1>(HIST("JPsiXPos"))->Fill(dimuon.mass());
-                  }
+                  if (usePhi) {
+                    if (dimuon.phi1() > PI / 2 || dimuon.phi1() < -PI / 2) {
+                      hchi2MCHMIDLeft->Fill(dimuon.chi2MatchMCHMID1());
+                    } else if (dimuon.phi1() < PI / 2 && dimuon.phi1() > -PI / 2) {
+                      hchi2MCHMIDRight->Fill(dimuon.chi2MatchMCHMID1());
+                    }
 
-                  if (dimuon.phi1() > PI / 2 || dimuon.phi1() < -PI / 2) {
-                    if (dimuon.phi2() < PI / 2 && dimuon.phi2() > -PI / 2) {
+                    if ((dimuon.phi1() > PI / 2 || dimuon.phi1() < -PI / 2) && (dimuon.phi2() > PI / 2 || dimuon.phi2() < -PI / 2)) {
+                      registry.get<TH1>(HIST("JPsiXNeg"))->Fill(dimuon.mass());
+                    }
+
+                    if ((dimuon.phi1() < PI / 2 && dimuon.phi1() > -PI / 2) && (dimuon.phi2() < PI / 2 && dimuon.phi2() > -PI / 2)) {
+                      registry.get<TH1>(HIST("JPsiXPos"))->Fill(dimuon.mass());
+                    }
+
+                    if (dimuon.phi1() > PI / 2 || dimuon.phi1() < -PI / 2) {
+                      if (dimuon.phi2() < PI / 2 && dimuon.phi2() > -PI / 2) {
+                        registry.get<TH1>(HIST("JPsiXNeutral"))->Fill(dimuon.mass());
+                      }
+                    }
+                    if (dimuon.phi1() < PI / 2 && dimuon.phi1() > -PI / 2) {
+                      if (dimuon.phi2() > PI / 2 || dimuon.phi2() < -PI / 2) {
+                        registry.get<TH1>(HIST("JPsiXNeutral"))->Fill(dimuon.mass());
+                      }
+                    }
+                  } // end if phi method
+
+                  if (useMomentum) {
+                    if (px1 < 0. && px2 < 0.) {
+                      hchi2MCHMIDLeft->Fill(dimuon.chi2MatchMCHMID1());
+                    } else if (px1 > 0. && px2 > 0.) {
+                      hchi2MCHMIDRight->Fill(dimuon.chi2MatchMCHMID1());
+                    }
+                    if (py1 < 0. && py2 < 0.) {
+                      hchi2MCHMIDDown->Fill(dimuon.chi2MatchMCHMID1());
+                    } else if (py1 > 0. && py2 > 0.) {
+                      hchi2MCHMIDUp->Fill(dimuon.chi2MatchMCHMID1());
+                    }
+                    if (px1 < 0. && px2 < 0.) {
+                      registry.get<TH1>(HIST("JPsiXNeg"))->Fill(dimuon.mass());
+                    }
+                    if (px1 > 0. && px2 > 0.) {
+                      registry.get<TH1>(HIST("JPsiXPos"))->Fill(dimuon.mass());
+                    }
+                    if ((px1 < 0. && px2 > 0.) || (px1 > 0. && px2 < 0.)) {
                       registry.get<TH1>(HIST("JPsiXNeutral"))->Fill(dimuon.mass());
                     }
-                  }
-                  if (dimuon.phi1() < PI / 2 && dimuon.phi1() > -PI / 2) {
-                    if (dimuon.phi2() > PI / 2 || dimuon.phi2() < -PI / 2) {
-                      registry.get<TH1>(HIST("JPsiXNeutral"))->Fill(dimuon.mass());
+                    if (py1 < 0. && py2 < 0.) {
+                      registry.get<TH1>(HIST("JPsiYNeg"))->Fill(dimuon.mass());
                     }
-                  }
-                } // end if phi method
+                    if (py1 > 0. && py2 > 0.) {
+                      registry.get<TH1>(HIST("JPsiYPos"))->Fill(dimuon.mass());
+                    }
+                    if ((py1 < 0. && py2 > 0.) || (py1 > 0. && py2 < 0.)) {
+                      registry.get<TH1>(HIST("JPsiYNeutral"))->Fill(dimuon.mass());
+                    }
+                  } // end of momentum method
 
-                if (useMomentum) {
-                  if (px1 < 0. && px2 < 0.) {
-                    hchi2MCHMIDLeft->Fill(dimuon.chi2MatchMCHMID1());
-                  } else if (px1 > 0. && px2 > 0.) {
-                    hchi2MCHMIDRight->Fill(dimuon.chi2MatchMCHMID1());
-                  }
-                  if (py1 < 0. && py2 < 0.) {
-                    hchi2MCHMIDDown->Fill(dimuon.chi2MatchMCHMID1());
-                  } else if (py1 > 0. && py2 > 0.) {
-                    hchi2MCHMIDUp->Fill(dimuon.chi2MatchMCHMID1());
-                  }
-                  if (px1 < 0. && px2 < 0.) {
-                    registry.get<TH1>(HIST("JPsiXNeg"))->Fill(dimuon.mass());
-                  }
-                  if (px1 > 0. && px2 > 0.) {
-                    registry.get<TH1>(HIST("JPsiXPos"))->Fill(dimuon.mass());
-                  }
-                  if ((px1 < 0. && px2 > 0.) || (px1 > 0. && px2 < 0.)) {
-                    registry.get<TH1>(HIST("JPsiXNeutral"))->Fill(dimuon.mass());
-                  }
-                  if (py1 < 0. && py2 < 0.) {
-                    registry.get<TH1>(HIST("JPsiYNeg"))->Fill(dimuon.mass());
-                  }
-                  if (py1 > 0. && py2 > 0.) {
-                    registry.get<TH1>(HIST("JPsiYPos"))->Fill(dimuon.mass());
-                  }
-                  if ((py1 < 0. && py2 > 0.) || (py1 > 0. && py2 < 0.)) {
-                    registry.get<TH1>(HIST("JPsiYNeutral"))->Fill(dimuon.mass());
-                  }
-                } // end of momentum method
-
-              } // end rapidity cut
-            }
-          } // end MCH-MID track selection
-        } //end pt cut   
-        // end OS selection
-      }     // end eta cut (MUON acceptance)
+                } // end rapidity cut
+              }
+            } // end MCH-MID track selection
+          }   // end pt cut
+          // end OS selection
+        } // end eta cut (MUON acceptance)
 
       // MCH-MFT chi2 studies
       if ((dimuon.eta1() > -3.6 && dimuon.eta1() < -2.5) && (dimuon.eta2() > -3.6 && dimuon.eta2() < -2.5)) { // cut on eta in mft acceptance
         if (dimuon.sign() == 0) {
           hdeltaZ->Fill(deltaZ);
         }
-        
+
         if (dimuon.chi2MatchMCHMFT1() > 0 && dimuon.chi2MatchMCHMFT2() > 0) {
           hRapidityMCHMFT->Fill(rap);
           if (dimuon.sign() == 0) {
@@ -261,10 +271,10 @@ struct mumuReader {
                 hTauz->Fill(dimuon.tauz());
               }
               if (px1 < 0. && px2 < 0.) {
-                    hchi2MCHMFTLeft->Fill(dimuon.chi2MatchMCHMFT1());
-                  } else if (px1 > 0. && px2 > 0.) {
-                    hchi2MCHMFTRight->Fill(dimuon.chi2MatchMCHMFT1());
-                  }
+                hchi2MCHMFTLeft->Fill(dimuon.chi2MatchMCHMFT1());
+              } else if (px1 > 0. && px2 > 0.) {
+                hchi2MCHMFTRight->Fill(dimuon.chi2MatchMCHMFT1());
+              }
               registry.get<TH3>(HIST("massTH3"))->Fill(dimuon.mass(), dimuon.chi2MatchMCHMFT1(), dimuon.chi2MatchMCHMFT2());
             } // end rapidity cut
           }   // end sign selection
