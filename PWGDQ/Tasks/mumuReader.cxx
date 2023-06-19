@@ -159,7 +159,7 @@ struct mumuReader {
                 // ambiguous tracks studies
                 registry.get<TH1>(HIST("ambiguous1"))->Fill(dimuon.isAmbig1());
                 registry.get<TH1>(HIST("ambiguous2"))->Fill(dimuon.isAmbig2());
-                if (!(dimuon.isAmbig1()) && !(dimuon.isAmbig2())) {
+                if (!(dimuon.isAmbig1()) || !(dimuon.isAmbig2())) {
                   registry.get<TH1>(HIST("JPsiStandardNoAmbig"))->Fill(dimuon.mass());
                   registry.get<TH1>(HIST("trackChi2_1_noAmbig"))->Fill(dimuon.chi21());
                   //______________________________________________________________________________
@@ -214,7 +214,7 @@ struct mumuReader {
                     registry.get<TH1>(HIST("JPsiRap354"))->Fill(dimuon.mass());
                   }
                 }
-                if (dimuon.isAmbig1() && dimuon.isAmbig2()) {
+                if (dimuon.isAmbig1() || dimuon.isAmbig2()) {
                   registry.get<TH1>(HIST("JPsiStandardAmbigOnly"))->Fill(dimuon.mass());
                 }
 
