@@ -14,6 +14,22 @@ o2physics_add_dpl_workflow(table-reader
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::PWGDQCore
                     COMPONENT_NAME Analysis)
 
+o2physics_add_dpl_workflow(mumu-reader
+                    SOURCES mumuReader.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::PWGDQCore
+                    COMPONENT_NAME Analysis)
+o2physics_add_dpl_workflow(muon-reader
+                    SOURCES muonReader.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::PWGDQCore
+                    COMPONENT_NAME Analysis)
+o2physics_add_dpl_workflow(muon-loop-event-reader
+                    SOURCES muonLoopEventReader.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::PWGDQCore
+                    COMPONENT_NAME Analysis)
+o2physics_add_dpl_workflow(muon-reader-mc
+                    SOURCES muonReaderMC.cxx
+                    PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::PWGDQCore
+                    COMPONENT_NAME Analysis)
 o2physics_add_dpl_workflow(efficiency
                     SOURCES dqEfficiency.cxx
                     PUBLIC_LINK_LIBRARIES O2::Framework O2Physics::AnalysisCore O2Physics::PWGDQCore
