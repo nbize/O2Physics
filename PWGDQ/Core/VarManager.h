@@ -484,6 +484,12 @@ class VarManager : public TObject
     kSingleGapC
   };
 
+  enum MuonExtrapolation {
+    kToVertex = 0,
+    kToDCA,
+    kToRabs
+  };
+
   static TString fgVariableNames[kNVars]; // variable names
   static TString fgVariableUnits[kNVars]; // variable units
   static void SetDefaultVarNames();
@@ -622,7 +628,7 @@ class VarManager : public TObject
   };
 
   template <typename T, typename C>
-  static o2::dataformats::GlobalFwdTrack PropagateMuon(const T& muon, const C& collision);
+  static o2::dataformats::GlobalFwdTrack PropagateMuon(const T& muon, const C& collision, int endPoint = kToVertex);
   template <uint32_t fillMap, typename T, typename C>
   static void FillPropagateMuon(const T& muon, const C& collision, float* values = nullptr);
   template <uint32_t fillMap, typename T>
@@ -814,7 +820,7 @@ KFPVertex VarManager::createKFPVertexFromCollision(const T& collision)
 }
 
 template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack VarManager::PropagateMuon(const T& muon, const C& collision)
+o2::dataformats::GlobalFwdTrack VarManager::PropagateMuon(const T& muon, const C& collision, const int endPoint)
 {
   double chi2 = muon.chi2();
   SMatrix5 tpars(muon.x(), muon.y(), muon.phi(), muon.tgl(), muon.signed1Pt());
@@ -830,7 +836,15 @@ o2::dataformats::GlobalFwdTrack VarManager::PropagateMuon(const T& muon, const C
     track.setZ(fwdtrack.getZ());
     track.setCovariances(tcovs);
     auto mchTrack = mMatching.FwdtoMCH(track);
-    o2::mch::TrackExtrap::extrapToVertex(mchTrack, collision.posX(), collision.posY(), collision.posZ(), collision.covXX(), collision.covYY());
+    if (endPoint == kToVertex) {
+      o2::mch::TrackExtrap::extrapToVertex(mchTrack, collision.posX(), collision.posY(), collision.posZ(), collision.covXX(), collision.covYY());
+    }
+    if (endPoint == kToDCA) {
+      o2::mch::TrackExtrap::extrapToVertexWithoutBranson(mchTrack, collision.posZ());
+    }
+    if (endPoint == kToRabs) {
+      o2::mch::TrackExtrap::extrapToZ(mchTrack, -505.);
+    }
     auto proptrack = mMatching.MCHtoFwd(mchTrack);
     propmuon.setParameters(proptrack.getParameters());
     propmuon.setZ(proptrack.getZ());
@@ -856,7 +870,7 @@ void VarManager::FillPropagateMuon(const T& muon, const C& collision, float* val
   if (!values) {
     values = fgValues;
   }
-  if constexpr ((fillMap & MuonCov) > 0) {
+  if constexpr ((fillMap & MuonCov) > 0 || (fillMap & ReducedMuonCov) > 0) {
     o2::dataformats::GlobalFwdTrack propmuon = PropagateMuon(muon, collision);
     values[kPt] = propmuon.getPt();
     values[kX] = propmuon.getX();
@@ -865,6 +879,10 @@ void VarManager::FillPropagateMuon(const T& muon, const C& collision, float* val
     values[kEta] = propmuon.getEta();
     values[kTgl] = propmuon.getTgl();
     values[kPhi] = propmuon.getPhi();
+
+    o2::dataformats::GlobalFwdTrack propmuonDCA = PropagateMuon(muon, collision, kToDCA);
+    values[kMuonDCAx] = propmuonDCA.getX() - collision.posX();
+    values[kMuonDCAy] = propmuonDCA.getY() - collision.posY();
 
     SMatrix55 cov = propmuon.getCovariances();
     values[kMuonCXX] = cov(0, 0);
