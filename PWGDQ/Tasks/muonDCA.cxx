@@ -29,15 +29,15 @@ using MyMuons = soa::Join<aod::ReducedMuons, aod::ReducedMuonsExtra, aod::Reduce
 using MyEvents = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended>;
 using MyEventsVtxCov = soa::Join<aod::ReducedEvents, aod::ReducedEventsExtended, aod::ReducedEventsVtxCov>;
 
+// constexpr static uint32_t gkMuonDCAFillMapWithCov = VarManager::ObjTypes::ReducedMuon | VarManager::ObjTypes::ReducedMuonExtra | VarManager::ObjTypes::ReducedMuonCov | VarManager::ObjTypes::MuonDCA;
+
+constexpr static int toVertex = VarManager::kToVertex;
+constexpr static int toDCA = VarManager::kToDCA;
+constexpr static int toRabs = VarManager::kToRabs;
+
 static o2::globaltracking::MatchGlobalFwd mExtrap;
 template <typename T>
 bool isSelected(const T& muon);
-template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack propagateToVertex(const T& muon, const C& collision);
-template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack propagateToDCA(const T& muon, const C& collision);
-template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack propagateToRabs(const T& muon, const C& collision);
 
 struct muonExtrap {
   Produces<ReducedMuonsDca> dcaTable;
@@ -70,18 +70,34 @@ struct muonExtrap {
     AxisSpec dcaxAxis = {200, -100.0, 100.0, "DCA_x"};
     AxisSpec dcayAxis = {200, -100.0, 100.0, "DCA_y"};
     AxisSpec rabsAxis = {100, 0., 100.0, "R_{abs}"};
+    AxisSpec xAxis = {200, -100., 100.0, "x (cm)"};
+    AxisSpec yAxis = {200, -100., 100.0, "y (cm)"};
+    AxisSpec zAxis = {200, -100., 100.0, "z (cm)"};
 
     HistogramConfigSpec pdcaSpec({HistType::kTH1F, {pdcaAxis}});
     HistogramConfigSpec dcaSpec({HistType::kTH1F, {dcaAxis}});
     HistogramConfigSpec dcaxSpec({HistType::kTH1F, {dcaxAxis}});
     HistogramConfigSpec dcaySpec({HistType::kTH1F, {dcayAxis}});
     HistogramConfigSpec rabsSpec({HistType::kTH1F, {rabsAxis}});
+    HistogramConfigSpec xSpec({HistType::kTH1F, {xAxis}});
+    HistogramConfigSpec ySpec({HistType::kTH1F, {yAxis}});
+    HistogramConfigSpec zSpec({HistType::kTH1F, {zAxis}});
 
     registry.add("pdca", "pDCA", pdcaSpec);
     registry.add("dca", "DCA", dcaSpec);
     registry.add("dcax", "DCA_x", dcaxSpec);
     registry.add("dcay", "DCA_y", dcaySpec);
     registry.add("rabs", "R_{abs}", rabsSpec);
+    registry.add("xAtVtx", "x at vertex", xSpec);
+    registry.add("xAtDCA", "x at DCA", xSpec);
+    registry.add("xAtRabs", "x at end abs", xSpec);
+    registry.add("yAtVtx", "y at vertex", ySpec);
+    registry.add("yAtDCA", "y at DCA", ySpec);
+    registry.add("yAtRabs", "y at end abs", ySpec);
+    registry.add("zAtVtx", "z at vertex", zSpec);
+    registry.add("zAtDCA", "z at DCA", zSpec);
+    registry.add("zAtRabs", "z at end abs", zSpec);
+
   }
 
   void processExtrapolation(MyEventsVtxCov::iterator const& collision, MyMuons const& muons)
@@ -102,22 +118,32 @@ struct muonExtrap {
         continue; // Make sure to remove global muon tracks
       }
       // propagate muon track to vertex
-      o2::dataformats::GlobalFwdTrack muonTrackAtVertex = propagateToVertex(muon, collision);
+      o2::dataformats::GlobalFwdTrack muonTrackAtVertex = VarManager::PropagateMuon(muon, collision, toVertex);
 
       // propagate muon track to DCA
-      o2::dataformats::GlobalFwdTrack muonTrackAtDCA = propagateToDCA(muon, collision);
+      o2::dataformats::GlobalFwdTrack muonTrackAtDCA = VarManager::PropagateMuon(muon, collision, toDCA);
 
       // propagate to Rabs
-      o2::dataformats::GlobalFwdTrack muonTrackAtRabs = propagateToRabs(muon, collision);
+      o2::dataformats::GlobalFwdTrack muonTrackAtRabs = VarManager::PropagateMuon(muon, collision, toRabs);
 
       // Calculate DCA quantities (preferable to do it with VarManager)
-      double dcax = collision.posX() - muonTrackAtDCA.getX();
-      double dcay = collision.posY() - muonTrackAtDCA.getY();
+      double dcax = muonTrackAtDCA.getX() - collision.posX();
+      double dcay = muonTrackAtDCA.getY() - collision.posY() ;
       double dca = std::sqrt(dcax * dcax + dcay * dcay);
       double pdca = muonTrackAtVertex.getP() * dca;
+      
+      double xAtVtx = muonTrackAtVertex.getX();
+      double yAtVtx = muonTrackAtVertex.getY();
+      double zAtVtx = muonTrackAtVertex.getZ();
+
+      double xAtDCA = muonTrackAtDCA.getX();
+      double yAtDCA = muonTrackAtDCA.getY();
+      double zAtDCA = muonTrackAtDCA.getZ();
 
       double xAbs = muonTrackAtRabs.getX();
       double yAbs = muonTrackAtRabs.getY();
+      double zAbs = muonTrackAtRabs.getZ();
+
       double rabs = std::sqrt(xAbs * xAbs + yAbs * yAbs);
 
       // QA histograms
@@ -126,6 +152,18 @@ struct muonExtrap {
       registry.get<TH1>(HIST("dcax"))->Fill(dcax);
       registry.get<TH1>(HIST("dcay"))->Fill(dcay);
       registry.get<TH1>(HIST("rabs"))->Fill(rabs);
+
+      registry.get<TH1>(HIST("xAtDCA"))->Fill(xAtDCA);
+      registry.get<TH1>(HIST("xAtRabs"))->Fill(xAbs);
+      registry.get<TH1>(HIST("xAtVtx"))->Fill(xAtVtx);
+
+      registry.get<TH1>(HIST("yAtDCA"))->Fill(yAtDCA);
+      registry.get<TH1>(HIST("yAtRabs"))->Fill(yAbs);
+      registry.get<TH1>(HIST("yAtVtx"))->Fill(yAtVtx);
+
+      registry.get<TH1>(HIST("zAtDCA"))->Fill(zAtDCA);
+      registry.get<TH1>(HIST("zAtRabs"))->Fill(zAbs);
+      registry.get<TH1>(HIST("zAtVtx"))->Fill(zAtVtx);
 
       // Fill DCA table
       dcaTable(pdca,
@@ -137,7 +175,10 @@ struct muonExtrap {
                muonTrackAtVertex.getEta(),
                muonTrackAtVertex.getPhi(),
                muon.sign(),
-               muon.isAmbiguous());
+               muon.isAmbiguous(),
+               muonTrackAtVertex.getPx(),
+               muonTrackAtVertex.getPy(),
+               muonTrackAtVertex.getPz());
     }
   }
 
@@ -150,161 +191,6 @@ struct muonExtrap {
 
   PROCESS_SWITCH(muonExtrap, processDummy, "do nothing", false);
 };
-
-template <typename T>
-bool isSelected(const T& muon)
-{
-  bool keepTrack = true;
-  if (muon.eta() < -4. || muon.eta() > -2.5) {
-    LOGF(info, "Reject muon with eta = %f", muon.eta());
-    keepTrack = false;
-  }
-  if (muon.isAmbiguous()) {
-    LOGF(info, "Reject ambiguous muon with flag = %d", muon.isAmbiguous());
-    keepTrack = false;
-  }
-  return keepTrack;
-}
-
-
-// template <typename T, typename C>
-// o2::dataformats::GlobalFwdTrack propagateGeneralMethod(const T& muon, const C& collision)
-// {
-//   double chi2 = muon.chi2();
-//   SMatrix5 tpars(muon.x(), muon.y(), muon.phi(), muon.tgl(), muon.signed1Pt());
-//   std::vector<double> v1{muon.cXX(), muon.cXY(), muon.cYY(), muon.cPhiX(), muon.cPhiY(),
-//                          muon.cPhiPhi(), muon.cTglX(), muon.cTglY(), muon.cTglPhi(), muon.cTglTgl(),
-//                          muon.c1PtX(), muon.c1PtY(), muon.c1PtPhi(), muon.c1PtTgl(), muon.c1Pt21Pt2()};
-//   SMatrix55 tcovs(v1.begin(), v1.end());
-//   o2::track::TrackParCovFwd fwdtrack{muon.z(), tpars, tcovs, chi2};
-//   o2::dataformats::GlobalFwdTrack propmuon;
-//   if (static_cast<int>(muon.trackType()) > 2) {
-//     o2::dataformats::GlobalFwdTrack track;
-//     track.setParameters(tpars);
-//     track.setZ(fwdtrack.getZ());
-//     track.setCovariances(tcovs);
-//     auto mchTrack = mExtrap.FwdtoMCH(track);
-
-//     if (kToVertex){
-//       // do vertex
-//       o2::mch::TrackExtrap::extrapToVertex(mchTrack, collision.posX(), collision.posY(), collision.posZ(), collision.covXX(), collision.covYY());
-//     auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-//     propmuon.setParameters(proptrack.getParameters());
-//     propmuon.setZ(proptrack.getZ());
-//     propmuon.setCovariances(proptrack.getCovariances());
-//     return propmuon;
-//     }
-//     else if (kToDCA){
-//       // do dca
-//     o2::mch::TrackExtrap::extrapToVertexWithoutBranson(mchTrack, collision.posZ());
-//     auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-//     propmuon.setParameters(proptrack.getParameters());
-//     propmuon.setZ(proptrack.getZ());
-//     propmuon.setCovariances(proptrack.getCovariances());
-//     return propmuon;
-//     }
-//     else if (kToRabs){
-//       // do rabs
-//     o2::mch::TrackExtrap::extrapToZ(mchTrack, -505.);
-//     auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-//     propmuon.setParameters(proptrack.getParameters());
-//     propmuon.setZ(proptrack.getZ());
-//     propmuon.setCovariances(proptrack.getCovariances());
-//     return propmuon;
-//     }
-//     o2::mch::TrackExtrap::extrapToVertex(mchTrack, collision.posX(), collision.posY(), collision.posZ(), collision.covXX(), collision.covYY());
-//     auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-//     propmuon.setParameters(proptrack.getParameters());
-//     propmuon.setZ(proptrack.getZ());
-//     propmuon.setCovariances(proptrack.getCovariances());
-//   }
-//   return propmuon;
-// }
-
-template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack propagateToVertex(const T& muon, const C& collision)
-{
-  double chi2 = muon.chi2();
-  SMatrix5 tpars(muon.x(), muon.y(), muon.phi(), muon.tgl(), muon.signed1Pt());
-  std::vector<double> v1{muon.cXX(), muon.cXY(), muon.cYY(), muon.cPhiX(), muon.cPhiY(),
-                         muon.cPhiPhi(), muon.cTglX(), muon.cTglY(), muon.cTglPhi(), muon.cTglTgl(),
-                         muon.c1PtX(), muon.c1PtY(), muon.c1PtPhi(), muon.c1PtTgl(), muon.c1Pt21Pt2()};
-  SMatrix55 tcovs(v1.begin(), v1.end());
-  o2::track::TrackParCovFwd fwdtrack{muon.z(), tpars, tcovs, chi2};
-  o2::dataformats::GlobalFwdTrack propmuon;
-  if (static_cast<int>(muon.trackType()) > 2) {
-    o2::dataformats::GlobalFwdTrack track;
-    track.setParameters(tpars);
-    track.setZ(fwdtrack.getZ());
-    track.setCovariances(tcovs);
-    auto mchTrack = mExtrap.FwdtoMCH(track);
-    o2::mch::TrackExtrap::extrapToVertex(mchTrack, collision.posX(), collision.posY(), collision.posZ(), collision.covXX(), collision.covYY());
-    auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-    propmuon.setParameters(proptrack.getParameters());
-    propmuon.setZ(proptrack.getZ());
-    propmuon.setCovariances(proptrack.getCovariances());
-  }
-  return propmuon;
-}
-
-template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack propagateToDCA(const T& muon, const C& collision)
-{
-  double chi2 = muon.chi2();
-  SMatrix5 tpars(muon.x(), muon.y(), muon.phi(), muon.tgl(), muon.signed1Pt());
-  std::vector<double> v1{muon.cXX(), muon.cXY(), muon.cYY(), muon.cPhiX(), muon.cPhiY(),
-                         muon.cPhiPhi(), muon.cTglX(), muon.cTglY(), muon.cTglPhi(), muon.cTglTgl(),
-                         muon.c1PtX(), muon.c1PtY(), muon.c1PtPhi(), muon.c1PtTgl(), muon.c1Pt21Pt2()};
-  SMatrix55 tcovs(v1.begin(), v1.end());
-  o2::track::TrackParCovFwd fwdtrack{muon.z(), tpars, tcovs, chi2};
-  o2::dataformats::GlobalFwdTrack propmuon;
-  if (static_cast<int>(muon.trackType()) > 2) {
-    o2::dataformats::GlobalFwdTrack track;
-    track.setParameters(tpars);
-    track.setZ(fwdtrack.getZ());
-    track.setCovariances(tcovs);
-    auto mchTrack = mExtrap.FwdtoMCH(track);
-    o2::mch::TrackExtrap::extrapToVertexWithoutBranson(mchTrack, collision.posZ());
-    auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-    propmuon.setParameters(proptrack.getParameters());
-    propmuon.setZ(proptrack.getZ());
-    propmuon.setCovariances(proptrack.getCovariances());
-  }
-  return propmuon;
-}
-
-template <typename T, typename C>
-o2::dataformats::GlobalFwdTrack propagateToRabs(const T& muon, const C& collision)
-{
-  double chi2 = muon.chi2();
-  SMatrix5 tpars(muon.x(), muon.y(), muon.phi(), muon.tgl(), muon.signed1Pt());
-  std::vector<double> v1{muon.cXX(), muon.cXY(), muon.cYY(), muon.cPhiX(), muon.cPhiY(),
-                         muon.cPhiPhi(), muon.cTglX(), muon.cTglY(), muon.cTglPhi(), muon.cTglTgl(),
-                         muon.c1PtX(), muon.c1PtY(), muon.c1PtPhi(), muon.c1PtTgl(), muon.c1Pt21Pt2()};
-  SMatrix55 tcovs(v1.begin(), v1.end());
-  o2::track::TrackParCovFwd fwdtrack{muon.z(), tpars, tcovs, chi2};
-  o2::dataformats::GlobalFwdTrack propmuon;
-  // o2::mch::TrackParam mchTrack;
-  if (static_cast<int>(muon.trackType()) > 2) {
-    o2::dataformats::GlobalFwdTrack track;
-    track.setParameters(tpars);
-    track.setZ(fwdtrack.getZ());
-    track.setCovariances(tcovs);
-    auto mchTrack = mExtrap.FwdtoMCH(track);
-    o2::mch::TrackExtrap::extrapToZ(mchTrack, -505.);
-    auto proptrack = mExtrap.MCHtoFwd(mchTrack);
-    propmuon.setParameters(proptrack.getParameters());
-    propmuon.setZ(proptrack.getZ());
-    propmuon.setCovariances(proptrack.getCovariances());
-  }
-  return propmuon;
-}
-
-// extrapolate to the end of the absorber
-// o2::mch::TrackParam trackParamAtRAbs(track.getZ(), track.getParameters());
-// if (!o2::mch::TrackExtrap::extrapToZ(trackParamAtRAbs, -505.)) {
-//   return false;
-// }
 
 WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
 {

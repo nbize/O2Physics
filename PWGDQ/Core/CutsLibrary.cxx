@@ -1834,6 +1834,12 @@ AnalysisCompositeCut* o2::aod::dqcuts::GetCompositeCut(const char* cutName)
     return cut;
   }
 
+  if (!nameStr.compare("mchmidAcceptanceCuts")) {
+    cut->AddCut(GetAnalysisCut("muonAcceptanceCuts"));
+    cut->AddCut(GetAnalysisCut("MCHMID"));
+    return cut;
+  }
+
   if (!nameStr.compare("muonLowPt210SigmaPDCA")) {
     cut->AddCut(GetAnalysisCut("muonLowPt2"));
     cut->AddCut(GetAnalysisCut("muonQualityCuts10SigmaPDCA"));
@@ -3860,6 +3866,12 @@ AnalysisCut* o2::aod::dqcuts::GetAnalysisCut(const char* cutName)
     cut->AddCut(VarManager::kEta, -4.0, -2.5);
     cut->AddCut(VarManager::kMuonChi2, 0.0, 1e6);
     cut->AddCut(VarManager::kMuonChi2MatchMCHMID, 0.0, 1e6); // matching MCH-MID
+    return cut;
+  }
+
+  if (!nameStr.compare("muonAcceptanceCuts")) {
+    cut->AddCut(VarManager::kEta, -4.0, -2.5);
+    cut->AddCut(VarManager::kMuonRAtAbsorberEnd, 17.6, 89.5);
     return cut;
   }
 
