@@ -704,6 +704,7 @@ DECLARE_SOA_COLUMN(pDCA, pdca, float); //!
 DECLARE_SOA_COLUMN(DCA, dca, float);   //!
 DECLARE_SOA_COLUMN(DCAx, dcax, float); //!
 DECLARE_SOA_COLUMN(DCAy, dcay, float); //!
+DECLARE_SOA_COLUMN(Rabs, rabs, float); //!
 DECLARE_SOA_COLUMN(Px, px, float);     //!
 DECLARE_SOA_COLUMN(Py, py, float);     //!
 DECLARE_SOA_COLUMN(Pz, pz, float);     //!
@@ -714,7 +715,7 @@ DECLARE_SOA_TABLE(ReducedMuonsDca, "AOD", "RTMUONDCA",
                   muondca::DCA,
                   muondca::DCAx,
                   muondca::DCAy,
-                  fwdtrack::RAtAbsorberEnd,
+                  muondca::Rabs,
                   reducedmuon::Pt,
                   reducedmuon::Eta, reducedmuon::Phi,
                   reducedmuon::Sign, reducedmuon::IsAmbiguous,
